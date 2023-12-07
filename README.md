@@ -21,6 +21,11 @@ One `conda` is installed, the next step is to create a new `conda` environment w
 conda create --name metrics python=3.11.6
 ```
 
+Activate the environment:
+```bash
+conda activate metrics
+```
+
 Then, the `condastats` package can be installed with:
 ```bash
 conda install -c conda-forge condastats
