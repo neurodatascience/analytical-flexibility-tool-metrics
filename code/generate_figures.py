@@ -67,6 +67,88 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
         ax=ax,
     )
 
+    ax.set_ylim(bottom=0)
+    ax.set_xlim(left=min(df_citations[col_citation_date]), right=max(df_citations[col_citation_date]))
+
+    return ax
+
+def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+    ax = sns.barplot(
+        data=df_metrics.sort_values(generate_col_standardized(COL_CONTAINER_PULLS), ascending=False),
+        y=generate_col_standardized(COL_CONTAINER_PULLS),
+        x=COL_NAME,
+        ax=ax,
+    )
+    ax.set_ylim(bottom=0)
+    return ax
+
+def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+
+    df_pypi_metrics = df_metrics.loc[
+        :,
+        [
+            COL_NAME,
+            COL_PYPI_DOWNLOADS_TIMESERIES,
+            COL_PYTHON_DOWNLOADS_TOTAL,
+        ],
+    ]
+
+    col_date = 'date'
+    col_downloads = 'downloads'
+    col_downloads_cumulative = 'downloads_cumulative'
+
+    data_for_df_downloads = []
+    for tool, download_entries, total_downloads in df_pypi_metrics.itertuples(index=False):
+
+        n_recent_downloads = 0
+        min_date = None
+        for entry in download_entries['data']:
+            n_downloads = entry['downloads']
+            download_date = pd.to_datetime(entry['date'])
+            data_for_df_downloads.append({
+                COL_NAME: tool,
+                col_date: download_date,
+                col_downloads: n_downloads,
+            })
+            if min_date is None:
+                min_date = download_date
+            else:
+                min_date = min(min_date, download_date)
+            n_recent_downloads += n_downloads
+
+        # add an initial entry
+        data_for_df_downloads.append({
+            COL_NAME: tool,
+            col_date: min_date,
+            col_downloads: total_downloads - n_recent_downloads,
+        })
+    
+    # TODO also do conda downloads
+
+    df_downloads = pd.DataFrame(data_for_df_downloads).sort_values([COL_NAME, col_date])
+    df_downloads[col_downloads_cumulative] = df_downloads.groupby(COL_NAME)[col_downloads].cumsum()
+
+    ax = sns.lineplot(
+        data=df_downloads,
+        x=col_date,
+        y=col_downloads_cumulative,
+        hue=COL_NAME,
+        ax=ax,
+    )
+
+    ax.set_ylim(bottom=0)
+    ax.set_xlim(left=min(df_downloads[col_date]), right=max(df_downloads[col_date]))
+
+    return ax
+
+def plot_python_total(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+    ax = sns.barplot(
+        data=df_metrics.sort_values(generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL), ascending=False),
+        y=generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL),
+        x=COL_NAME,
+        ax=ax,
+    )
+    ax.set_ylim(bottom=0)
     return ax
 
 def generate_figures(
@@ -94,8 +176,11 @@ def generate_figures(
         df_metrics = pd.read_csv(
             fpath_metrics_in,
         )
-        idx_not_na = ~df_metrics[COL_CITATIONS].isna()
-        df_metrics.loc[idx_not_na, COL_CITATIONS] = df_metrics.loc[idx_not_na, COL_CITATIONS].apply(json.loads)
+        for col in [COL_CITATIONS, COL_PYPI_DOWNLOADS_TIMESERIES, COL_CONDA_DOWNLOADS_TIMESERIES]:
+            if col not in df_metrics.columns:
+                continue
+            idx_not_na = df_metrics[col].notna()
+            df_metrics.loc[idx_not_na, col] = df_metrics.loc[idx_not_na, col].apply(json.loads)
     else:
         df_metrics = compute_metrics(
             fpath_tools=fpath_tools,
@@ -103,6 +188,8 @@ def generate_figures(
             fpath_metrics_out=fpath_metrics_out,
             overwrite=overwrite,
         )
+
+    # print(df_metrics[COL_CONDA_DOWNLOADS_TIMESERIES])
 
     # TODO create figs directory if needed
     dpath_figs.mkdir(exist_ok=True)
@@ -114,22 +201,22 @@ def generate_figures(
 
         # determine figure layout
         # citation count
-        df_citations = df_metrics_section.loc[~pd.isna(df_metrics_section[COL_CITATIONS])]
+        df_citations = df_metrics_section.loc[pd.notna(df_metrics_section[COL_CITATIONS])]
         n_citations = df_citations[COL_CITATIONS].apply(len).sum()
         with_citations = n_citations > 0
         # code repo stars/forks
         # container pulls
         df_container_pulls = df_metrics_section.loc[
-            ~pd.isna(df_metrics_section[generate_col_standardized(COL_CONTAINER_PULLS)])
+            pd.notna(df_metrics_section[generate_col_standardized(COL_CONTAINER_PULLS)])
         ]
         n_container_pulls = df_container_pulls[COL_CONTAINER_PULLS].sum()
         with_container_pulls = n_container_pulls > 0
         # Python package total downloads
         df_python_downloads = df_metrics_section.loc[
             (
-                ~pd.isna(df_metrics_section[generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL)])
-                | ~pd.isna(df_metrics_section[COL_PYPI_DOWNLOADS_TIMESERIES])
-                # | ~pd.isna(df_metrics_section[COL_CONDA_DOWNLOADS_TIMESERIES])
+                pd.notna(df_metrics_section[generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL)])
+                | pd.notna(df_metrics_section[COL_PYPI_DOWNLOADS_TIMESERIES])
+                # | pd.notna(df_metrics_section[COL_CONDA_DOWNLOADS_TIMESERIES])
             )
         ]
         n_python_downloads_total = df_python_downloads[COL_PYTHON_DOWNLOADS_TOTAL].sum()
@@ -172,23 +259,26 @@ def generate_figures(
             )
         
         if ax_containers is not None:
-            sns.barplot(
-                data=df_container_pulls.sort_values(generate_col_standardized(COL_CONTAINER_PULLS), ascending=False),
-                y=generate_col_standardized(COL_CONTAINER_PULLS),
-                x=COL_NAME,
+            plot_containers_pulls(
+                df_container_pulls,
                 ax=ax_containers,
             )
 
+        if ax_python_timeseries is not None:
+            plot_python_timeseries(
+                df_metrics_section.loc[df_metrics_section[COL_PYPI_DOWNLOADS_TIMESERIES].notna()],
+                ax=ax_python_timeseries,
+            )
+
         if ax_python_total is not None:
-            sns.barplot(
-                data=df_python_downloads.sort_values(generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL), ascending=False),
-                y=generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL),
-                x=COL_NAME,
+            plot_python_total(
+                df_python_downloads,
                 ax=ax_python_total,
             )
 
         sns.despine()
         fig.tight_layout()
+
         section_name_clean = section.lower()
         for char in ' .-':
             section_name_clean = section_name_clean.replace(char, '_')

@@ -1,15 +1,15 @@
 import json
 import requests
 import warnings
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import wraps
 from operator import attrgetter
 from pathlib import Path
 from typing import Callable, Mapping, Tuple
 
-import condastats
 import pandas as pd
 import pypistats
+from condastats.cli import overall as condastats_overall
 
 from utils import (
     COL_DOI,
@@ -19,7 +19,7 @@ from utils import (
     COL_DOCKER2,
     COL_GITHUB_CONTAINER,
     COL_PYPI,
-    COL_ANACONDA,
+    COL_CONDA,
     COL_CITATIONS,
     COL_GITHUB_STARS,
     COL_GITHUB_FORKS,
@@ -43,6 +43,8 @@ from utils import (
 
 _REQUESTS_CACHE = {}
 
+_CONDASTATS_CACHE = {}
+
 def get_response_json(url, **kwargs):
     if url in _REQUESTS_CACHE:
         response = _REQUESTS_CACHE[url]
@@ -60,6 +62,11 @@ def get_response_json(url, **kwargs):
         _REQUESTS_CACHE[url] = response
     
     return response.json()
+
+def get_condastats_overall(conda_package):
+    if conda_package not in _CONDASTATS_CACHE:
+        _CONDASTATS_CACHE[conda_package] = condastats_overall(conda_package, complete=True)
+    return _CONDASTATS_CACHE[conda_package]
 
 def metric(func):
     @wraps(func)
@@ -139,6 +146,36 @@ def get_pypi_date(pypi_package):
         ])
     return min(dates)
 
+@metric
+def get_conda_downloads(conda_package):
+
+    downloads_info: pd.DataFrame = get_condastats_overall(conda_package)
+
+    if len(downloads_info) == 0:
+        return pd.NA
+    
+    return downloads_info.to_json(orient='records')
+
+@metric
+def get_conda_downloads_total(conda_package):
+
+    downloads_info: pd.DataFrame = get_condastats_overall(conda_package)
+
+    if len(downloads_info) == 0:
+        return pd.NA
+    
+    return downloads_info['counts'].sum()
+
+@metric
+def get_conda_date(conda_package):
+
+    downloads_info: pd.DataFrame = get_condastats_overall(conda_package)
+
+    if len(downloads_info) == 0:
+        return pd.NA
+    
+    return pd.to_datetime(downloads_info['date']).min()
+
 def compute_metrics(
         fpath_tools: Path,
         config_dict: Mapping[str, Tuple[str, Callable]] = None,
@@ -165,7 +202,7 @@ def compute_metrics(
                 )
         return df
 
-    cols_json = [COL_CITATIONS, COL_PYPI_DOWNLOADS_TIMESERIES]
+    cols_json = [COL_CITATIONS, COL_PYPI_DOWNLOADS_TIMESERIES, COL_CONDA_DOWNLOADS_TIMESERIES]
 
     if fpath_metrics_out is not None and fpath_metrics_out.exists() and not overwrite:
         raise RuntimeError(
@@ -190,6 +227,9 @@ def compute_metrics(
             COL_PYPI_DOWNLOADS_TOTAL: (COL_PYPI, get_pypi_downloads_total),
             generate_col_date(COL_PYPI_DOWNLOADS_TOTAL): (COL_PYPI, get_pypi_date),
             # TODO condastats
+            COL_CONDA_DOWNLOADS_TIMESERIES: (COL_CONDA, get_conda_downloads),
+            COL_CONDA_DOWNLOADS_TOTAL: (COL_CONDA, get_conda_downloads_total),
+            generate_col_date(COL_CONDA_DOWNLOADS_TOTAL): (COL_CONDA, get_conda_date),
         }
 
     df_tools = pd.read_csv(fpath_tools)
@@ -219,7 +259,7 @@ def compute_metrics(
                 f'Cannot standardize {col_to_standardize}: missing date info'
             )
 
-        idx_not_na = ~df_tools[col_to_standardize].isna()
+        idx_not_na = df_tools[col_to_standardize].notna()
         # get time difference in months
         time_diff = (fetch_date.to_period('M') - pd.to_datetime(df_tools.loc[idx_not_na, col_date]).dt.to_period('M')).apply(attrgetter('n'))
         df_tools.loc[idx_not_na, col_standardized] = df_tools.loc[idx_not_na, col_to_standardize] / time_diff
@@ -234,7 +274,7 @@ def compute_metrics(
         df_tools_to_save = df_tools.copy()
         # special handling of quotation marks for columns with JSON data
         for col in cols_json:
-            idx_not_na = ~df_tools_to_save[col].isna()
+            idx_not_na = df_tools_to_save[col].notna()
             df_tools_to_save.loc[idx_not_na, col] = df_tools_to_save.loc[idx_not_na, col].apply(json.dumps)
         df_tools_to_save.to_csv(fpath_metrics_out, index=False)
         print(f'Wrote metrics to {fpath_metrics_out}')

@@ -7,7 +7,7 @@ COL_DOCKER1 = 'docker1'
 COL_DOCKER2 = 'docker2'
 COL_GITHUB_CONTAINER = 'github_container'
 COL_PYPI = 'pypi'
-COL_ANACONDA = 'anaconda'
+COL_CONDA = 'conda'
 
 COL_CITATIONS = 'citations'
 COL_GITHUB_STARS = 'github_stars'
