@@ -20,7 +20,7 @@ from utils import (
     generate_col_standardized,
 )
 from metrics import compute_metrics
-from plotting import plot_timeseries
+from plotting import plot_timeseries, plot_bar
 
 def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
 
@@ -71,13 +71,12 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
     return ax
 
 def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
-    ax = sns.barplot(
+    ax = plot_bar(
         data=df_metrics.sort_values(generate_col_standardized(COL_CONTAINER_PULLS), ascending=False),
-        y=generate_col_standardized(COL_CONTAINER_PULLS),
         x=COL_NAME,
+        y=generate_col_standardized(COL_CONTAINER_PULLS),
         ax=ax,
     )
-    ax.set_ylim(bottom=0)
     return ax
 
 def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
@@ -137,13 +136,12 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
     return ax
 
 def plot_python_total(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
-    ax = sns.barplot(
+    ax = plot_bar(
         data=df_metrics.sort_values(generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL), ascending=False),
         y=generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL),
         x=COL_NAME,
         ax=ax,
     )
-    ax.set_ylim(bottom=0)
     return ax
 
 def generate_figures(
@@ -271,7 +269,6 @@ def generate_figures(
                 ax=ax_python_total,
             )
 
-        sns.despine()
         fig.tight_layout()
 
         section_name_clean = section.lower()
