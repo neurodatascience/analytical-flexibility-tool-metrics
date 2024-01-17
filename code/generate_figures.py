@@ -20,6 +20,7 @@ from utils import (
     generate_col_standardized,
 )
 from metrics import compute_metrics
+from plotting import plot_timeseries
 
 def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
 
@@ -59,16 +60,13 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
     )
     df_citations[col_n_citations_cumulative] = df_citations.groupby(COL_NAME)[col_n_citations].cumsum()
 
-    ax = sns.lineplot(
+    ax = plot_timeseries(
         data=df_citations,
         x=col_citation_date,
         y=col_n_citations_cumulative,
         hue=COL_NAME,
         ax=ax,
     )
-
-    ax.set_ylim(bottom=0)
-    ax.set_xlim(left=min(df_citations[col_citation_date]), right=max(df_citations[col_citation_date]))
 
     return ax
 
@@ -128,16 +126,13 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
     df_downloads = pd.DataFrame(data_for_df_downloads).sort_values([COL_NAME, col_date])
     df_downloads[col_downloads_cumulative] = df_downloads.groupby(COL_NAME)[col_downloads].cumsum()
 
-    ax = sns.lineplot(
+    ax = plot_timeseries(
         data=df_downloads,
         x=col_date,
         y=col_downloads_cumulative,
         hue=COL_NAME,
         ax=ax,
     )
-
-    ax.set_ylim(bottom=0)
-    ax.set_xlim(left=min(df_downloads[col_date]), right=max(df_downloads[col_date]))
 
     return ax
 
