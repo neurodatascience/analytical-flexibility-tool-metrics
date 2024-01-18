@@ -10,13 +10,15 @@ import pandas as pd
 import seaborn as sns
 
 from utils import (
-    COL_SECTION,
-    COL_NAME,
     COL_CITATIONS,
     COL_CONTAINER_PULLS,
     COL_CONDA_DOWNLOADS_TIMESERIES,
+    COL_REPO_FORKS,
+    COL_REPO_STARS,
+    COL_NAME,
     COL_PYPI_DOWNLOADS_TIMESERIES,
     COL_PYTHON_DOWNLOADS_TOTAL,
+    COL_SECTION,
     generate_col_standardized,
 )
 from metrics import compute_metrics
@@ -68,6 +70,24 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
         ax=ax,
     )
 
+    return ax
+
+def plot_stars(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+    ax = plot_bar(
+        data=df_metrics.sort_values(COL_REPO_STARS, ascending=False),
+        x=COL_NAME,
+        y=COL_REPO_STARS,
+        ax=ax,
+    )
+    return ax
+
+def plot_forks(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+    ax = plot_bar(
+        data=df_metrics.sort_values(COL_REPO_FORKS, ascending=False),
+        x=COL_NAME,
+        y=COL_REPO_FORKS,
+        ax=ax,
+    )
     return ax
 
 def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
@@ -182,9 +202,7 @@ def generate_figures(
             overwrite=overwrite,
         )
 
-    # print(df_metrics[COL_CONDA_DOWNLOADS_TIMESERIES])
-
-    # TODO create figs directory if needed
+    # create figs directory if needed
     dpath_figs.mkdir(exist_ok=True)
 
     for section, df_metrics_section in df_metrics.groupby(COL_SECTION):
@@ -198,6 +216,12 @@ def generate_figures(
         n_citations = df_citations[COL_CITATIONS].apply(len).sum()
         with_citations = n_citations > 0
         # code repo stars/forks
+        df_repo = df_metrics_section.loc[
+            pd.notna(
+                df_metrics_section[[COL_REPO_STARS, COL_REPO_FORKS]]
+            ).any(axis='columns')
+        ]
+        with_repo = len(df_repo) > 0
         # container pulls
         df_container_pulls = df_metrics_section.loc[
             pd.notna(df_metrics_section[generate_col_standardized(COL_CONTAINER_PULLS)])
@@ -224,7 +248,8 @@ def generate_figures(
         subplot_mosaic = []
         if with_citations:
             subplot_mosaic.append([label_citations] * 6)
-        # TODO repo metrics: half/half
+        if with_repo:
+            subplot_mosaic.append(([label_stars] * 3) + ([label_forks] * 3))
         if with_container_pulls:
             subplot_mosaic.append([label_containers] * 6)
         if with_python_downloads_total:
@@ -241,6 +266,8 @@ def generate_figures(
             figsize=(ax_width_unit * 6, ax_height * len(subplot_mosaic)),
         )
         ax_citations = axes.get(label_citations, None)
+        ax_stars = axes.get(label_stars, None)
+        ax_forks = axes.get(label_forks, None)
         ax_containers = axes.get(label_containers, None)
         ax_python_timeseries = axes.get(label_python_timeseries, None)
         ax_python_total = axes.get(label_python_total, None)
@@ -249,6 +276,18 @@ def generate_figures(
             plot_citations(
                 df_citations,
                 ax=ax_citations,
+            )
+
+        if ax_stars is not None:
+            plot_stars(
+                df_repo,
+                ax=ax_stars,
+            )
+
+        if ax_forks is not None:
+            plot_forks(
+                df_repo,
+                ax=ax_forks,
             )
         
         if ax_containers is not None:
