@@ -16,7 +16,7 @@ cd analytical-flexibility-tool-metrics
 
 One of the Python packages (`condastats`) needs to be installed using `conda` (there is a version on PyPI but the installation did not work). Hence, running the code requires creating a `conda` environment. Please refer to the official instructions on how to install [Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) or [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html) for your operating system.
 
-One `conda` is installed, the next step is to create a new `conda` environment with the appropriate Python version. Here we call the environment `metrics`, but it can be any name. The code runs with Python 3.11.6. It might run with other versions but has not been tested.
+Once `conda` is installed, the next step is to create a new `conda` environment with the appropriate Python version. Here we call the environment `metrics`, but it can be any name. The code runs with Python 3.11.6. It might run with other versions but has not been tested.
 ```bash
 conda create --name metrics python=3.11.6
 ```
@@ -41,6 +41,7 @@ The latest versions of the required packages will most likely work. The exceptio
 * `matplotlib` 3.8.2
 * `pandas` 1.5.3
 * `pypistats` 1.5.0
+* `python-dotenv` 1.0.0
 * `requests` 2.31.0
 * `seaborn` 0.13.0
 

@@ -1,5 +1,6 @@
 matplotlib
 pandas<2.0.0
 pypistats
+python-dotenv
 requests
 seaborn

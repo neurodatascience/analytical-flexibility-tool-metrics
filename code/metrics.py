@@ -1,15 +1,17 @@
 import json
+import os
 import requests
 import warnings
 from datetime import datetime
 from functools import wraps
 from operator import attrgetter
 from pathlib import Path
-from typing import Callable, Mapping, Tuple
+from typing import Any, Callable, Mapping, Optional, Tuple
 
 import pandas as pd
 import pypistats
 from condastats.cli import overall as condastats_overall
+from dotenv import load_dotenv
 
 from utils import (
     COL_DOI,
@@ -68,6 +70,25 @@ def get_condastats_overall(conda_package):
         _CONDASTATS_CACHE[conda_package] = condastats_overall(conda_package, complete=True)
     return _CONDASTATS_CACHE[conda_package]
 
+def get_github_response(github_repo):
+    
+    try:
+        username = os.getenv('GITHUB_USERNAME')
+        token = os.getenv('GITHUB_TOKEN')
+        auth = (username, token)
+    except KeyError:
+        auth=None
+    url = f'https://api.github.com/repos/{github_repo}'
+    return get_response_json(url, auth=auth)
+
+def get_gitlab_response(project_id):
+    url = f'https://gitlab.com/api/v4/projects/{project_id}'
+    return get_response_json(url)
+
+def get_docker_response(dockerhub_id):
+    url = f'https://hub.docker.com/v2/repositories/{dockerhub_id}'
+    return get_response_json(url)
+
 def metric(func):
     @wraps(func)
     def _metric(source):
@@ -83,23 +104,35 @@ def get_citations(doi):
 
 @metric
 def get_github_stars(github_repo):
-    url = f'https://api.github.com/repos/{github_repo}'
-    return get_response_json(url)['stargazers_count']
+    return get_github_response(github_repo)['stargazers_count']
 
 @metric
 def get_github_forks(github_repo):
-    url = f'https://api.github.com/repos/{github_repo}'
-    return get_response_json(url)['forks_count']
+    return get_github_response(github_repo)['forks_count']
+
+@metric
+def get_github_date(github_repo):
+    return pd.to_datetime(get_github_response(github_repo)['created_at'])
+
+@metric
+def get_gitlab_stars(project_id):
+    return get_gitlab_response(project_id)['star_count']
+
+@metric
+def get_gitlab_forks(project_id):
+    return get_gitlab_response(project_id)['forks_count']
+
+@metric
+def get_gitlab_date(project_id):
+    return pd.to_datetime(get_gitlab_response(project_id)['created_at'])
 
 @metric
 def get_dockerhub_pulls(dockerhub_id):
-    url = f'https://hub.docker.com/v2/repositories/{dockerhub_id}'
-    return get_response_json(url)['pull_count']
+    return get_docker_response(dockerhub_id)['pull_count']
 
 @metric
 def get_dockerhub_date(dockerhub_id):
-    url = f'https://hub.docker.com/v2/repositories/{dockerhub_id}'
-    return pd.to_datetime(get_response_json(url)['date_registered'])
+    return pd.to_datetime(get_docker_response(dockerhub_id)['date_registered'])
 
 @metric
 def get_github_container_pulls(github_container_id):
@@ -178,8 +211,9 @@ def get_conda_date(conda_package):
 
 def compute_metrics(
         fpath_tools: Path,
-        config_dict: Mapping[str, Tuple[str, Callable]] = None,
-        fpath_metrics_out: Path = None,
+        config_dict: Optional[Mapping[str, Tuple[str, Callable[[str], Any]]]] = None,
+        fpath_metrics_out: Optional[Path] = None,
+        fpath_dotenv: Optional[Path] = None,
         overwrite: bool = False,
     ) -> pd.DataFrame:
 
@@ -212,11 +246,14 @@ def compute_metrics(
     if config_dict is None:
         config_dict = {
             COL_CITATIONS: (COL_DOI, get_citations),
-            # COL_GITHUB_STARS: (COL_GITHUB, get_github_stars), # TODO get token
-            # COL_GITHUB_FORKS: (COL_GITHUB, get_github_forks),
-            # TODO GitHub authentication token
-            # TODO add GitHub date
-            # TODO figure out GitLab stars/forks + date
+            COL_GITHUB_STARS: (COL_GITHUB, get_github_stars),
+            COL_GITHUB_FORKS: (COL_GITHUB, get_github_forks),
+            generate_col_date(COL_GITHUB_STARS): (COL_GITHUB, get_github_date),
+            generate_col_date(COL_GITHUB_FORKS): (COL_GITHUB, get_github_date),
+            COL_GITLAB_STARS: (COL_GITLAB, get_gitlab_stars),
+            COL_GITLAB_FORKS: (COL_GITLAB, get_gitlab_forks),
+            generate_col_date(COL_GITLAB_STARS): (COL_GITLAB, get_gitlab_date),
+            generate_col_date(COL_GITLAB_FORKS): (COL_GITLAB, get_gitlab_date),
             COL_DOCKER_PULLS1: (COL_DOCKER1, get_dockerhub_pulls),
             generate_col_date(COL_DOCKER_PULLS1): (COL_DOCKER1, get_dockerhub_date),
             COL_DOCKER_PULLS2: (COL_DOCKER2, get_dockerhub_pulls),
@@ -226,11 +263,23 @@ def compute_metrics(
             COL_PYPI_DOWNLOADS_TIMESERIES: (COL_PYPI, get_pypi_downloads_recent),
             COL_PYPI_DOWNLOADS_TOTAL: (COL_PYPI, get_pypi_downloads_total),
             generate_col_date(COL_PYPI_DOWNLOADS_TOTAL): (COL_PYPI, get_pypi_date),
-            # TODO condastats
             COL_CONDA_DOWNLOADS_TIMESERIES: (COL_CONDA, get_conda_downloads),
             COL_CONDA_DOWNLOADS_TOTAL: (COL_CONDA, get_conda_downloads_total),
             generate_col_date(COL_CONDA_DOWNLOADS_TOTAL): (COL_CONDA, get_conda_date),
         }
+
+    # load 
+    if fpath_dotenv is None:
+        fpath_dotenv = Path(__file__).parent / '.env'
+    if fpath_dotenv.exists():
+        print(f'Loading environment variables from {fpath_dotenv}')
+        load_dotenv()
+    else:
+        warnings.warn(
+            f'Did not find dotenv file {fpath_dotenv}. '
+            'Metrics from APIs that have lower rate limits for '
+            'non-authenticated requests (e.g. GitHub) may not be available.'
+        )
 
     df_tools = pd.read_csv(fpath_tools)
     print(f'Generating metrics for {len(df_tools)} tools')
@@ -265,6 +314,7 @@ def compute_metrics(
         df_tools.loc[idx_not_na, col_standardized] = df_tools.loc[idx_not_na, col_to_standardize] / time_diff
 
     # TODO combine code repo metrics
+    
 
     # combine container metrics
     df_tools = combine_cols(df_tools, COL_CONTAINER_PULLS, COLS_CONTAINER_PULLS)
