@@ -24,15 +24,27 @@ from utils import (
 from metrics import compute_metrics
 from plotting import plot_timeseries, plot_bar
 
-CITATION_DATE_FIXES = {
+CITATION_CORRECTIONS = {
     # BIDS Apps
     '10.1371/journal.pcbi.1005209': {
-        '10.1007/978-1-0716-3195-9_21': '2023-07-23', # originally 2012-02-24
-        '10.1007/978-1-0716-3195-9_8': '2023-07-23',  # originally 2012-02-24
-    }
+        '10.1007/978-1-0716-3195-9_21': '2023-07-23',   # originally 2012-02-24
+        '10.1007/978-1-0716-3195-9_8': '2023-07-23',    # originally 2012-02-24
+    },
+    # Nextflow
+    '10.1038/nbt.3820': {
+        '10.1051/jbio/2017029': '2018-02-07',       # originally 2017 (but 2018 for online version)
+        '10.1017/s0956796817000119': '2017-10-24',  # originally 2017
+    },
+    # DataLad
+    '10.21105/joss.03262': {
+        '10.1101/2021.02.10.430678': '2021-08-23',  # originally 2021-02-11
+    },
 }
 
-def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None) -> plt.Axes:
+
+    if date_corrections is None:
+        date_corrections = {}
 
     # temporary helper columns
     col_citation_date = 'citation_date'
@@ -50,7 +62,7 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
         for citation in citations:
             try:
                 # fix wrong citation dates if needed
-                citation_date = CITATION_DATE_FIXES[citation['cited']][citation['citing']]
+                citation_date = date_corrections[citation['cited']][citation['citing']]
             except KeyError:
                 citation_date = citation['creation']
             data_for_df_citations.append({
@@ -189,6 +201,7 @@ def generate_figures(
         fpath_metrics_in: Path = None,
         fpath_metrics_out: Path = None,
         overwrite: bool = False,
+        citation_corrections: Mapping[str, Mapping[str, str]] = None,
     ):
 
     label_citations = 'citations'
@@ -290,6 +303,7 @@ def generate_figures(
             plot_citations(
                 df_citations,
                 ax=ax_citations,
+                date_corrections=citation_corrections,
             )
 
         if ax_repo is not None:
@@ -378,4 +392,5 @@ if __name__ == '__main__':
         fpath_metrics_in=fpath_metrics_in,
         fpath_metrics_out=fpath_metrics_out,
         overwrite=overwrite,
+        citation_corrections=CITATION_CORRECTIONS,
     )
