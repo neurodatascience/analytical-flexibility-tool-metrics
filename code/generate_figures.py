@@ -24,6 +24,14 @@ from utils import (
 from metrics import compute_metrics
 from plotting import plot_timeseries, plot_bar
 
+CITATION_DATE_FIXES = {
+    # BIDS Apps
+    '10.1371/journal.pcbi.1005209': {
+        '10.1007/978-1-0716-3195-9_21': '2023-07-23', # originally 2012-02-24
+        '10.1007/978-1-0716-3195-9_8': '2023-07-23',  # originally 2012-02-24
+    }
+}
+
 def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
 
     # temporary helper columns
@@ -40,10 +48,15 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
 
         # citations is a list of dicts, one for each citation
         for citation in citations:
+            try:
+                # fix wrong citation dates if needed
+                citation_date = CITATION_DATE_FIXES[citation['cited']][citation['citing']]
+            except KeyError:
+                citation_date = citation['creation']
             data_for_df_citations.append({
                 COL_NAME: tool,
                 col_n_citations: 1,
-                col_citation_date: pd.to_datetime(citation['creation']),
+                col_citation_date: pd.to_datetime(citation_date),
             })
 
         # add one last entry for the current date
