@@ -38,6 +38,8 @@ COLS_CONTAINER_PULLS = [COL_DOCKER_PULLS1, COL_DOCKER_PULLS2, COL_GITHUB_CONTAIN
 COLS_PYTHON_DOWNLOADS_TOTAL = [COL_PYPI_DOWNLOADS_TOTAL, COL_CONDA_DOWNLOADS_TOTAL]
 COL_CONTAINER_PULLS = 'container_pulls'  # total count
 COL_PYTHON_DOWNLOADS_TOTAL = 'python_downloads_total'  # total count
+COL_REPO_STARS = 'repo_stars'  # total count
+COL_REPO_FORKS = 'repo_forks'  # total count
 SUFFIX_DATE = '_date'
 SUFFIX_STANDARDIZED = '_standardized'
 

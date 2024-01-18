@@ -36,9 +36,13 @@ from utils import (
     COL_CONDA_DOWNLOADS_TOTAL,
     COL_CONTAINER_PULLS,
     COL_PYTHON_DOWNLOADS_TOTAL,
+    COL_REPO_STARS,
+    COL_REPO_FORKS,
     COLS_TO_STANDARDIZE,
     COLS_CONTAINER_PULLS,
     COLS_PYTHON_DOWNLOADS_TOTAL,
+    COLS_STARS,
+    COLS_FORKS,
     generate_col_date,
     generate_col_standardized,
 )
@@ -281,7 +285,10 @@ def compute_metrics(
             'non-authenticated requests (e.g. GitHub) may not be available.'
         )
 
-    df_tools = pd.read_csv(fpath_tools)
+    df_tools = pd.read_csv(fpath_tools, dtype=str)
+
+    # TODO validate input file
+
     print(f'Generating metrics for {len(df_tools)} tools')
 
     for col_metric, (col_info, metric_func) in config_dict.items():
@@ -313,8 +320,9 @@ def compute_metrics(
         time_diff = (fetch_date.to_period('M') - pd.to_datetime(df_tools.loc[idx_not_na, col_date]).dt.to_period('M')).apply(attrgetter('n'))
         df_tools.loc[idx_not_na, col_standardized] = df_tools.loc[idx_not_na, col_to_standardize] / time_diff
 
-    # TODO combine code repo metrics
-    
+    # combine code repo metrics
+    df_tools = combine_cols(df_tools, COL_REPO_STARS, COLS_STARS)
+    df_tools = combine_cols(df_tools, COL_REPO_FORKS, COLS_FORKS)
 
     # combine container metrics
     df_tools = combine_cols(df_tools, COL_CONTAINER_PULLS, COLS_CONTAINER_PULLS)
