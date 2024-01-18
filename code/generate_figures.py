@@ -197,7 +197,7 @@ def generate_figures(
         dpath_figs: Path,
         config_dict: Mapping[str, Tuple[str, Callable]] = None,
         ax_height=2,
-        ax_width_unit=3,
+        fig_width=10,
         fpath_metrics_in: Path = None,
         fpath_metrics_out: Path = None,
         overwrite: bool = False,
@@ -275,15 +275,13 @@ def generate_figures(
 
         subplot_mosaic = []
         if with_citations:
-            subplot_mosaic.append([label_citations] * 3)
+            subplot_mosaic.append([label_citations])
         if with_repo:
-            subplot_mosaic.append([label_repo] * 3)
+            subplot_mosaic.append([label_repo])
         if with_container_pulls:
-            subplot_mosaic.append([label_containers] * 3)
+            subplot_mosaic.append([label_containers])
         if with_python_downloads_total:
-            subplot_mosaic.append(
-                ([label_python_timeseries] * 2) + ([label_python_total] * 1)
-            )
+            subplot_mosaic.append([label_python_timeseries])
         
         if len(subplot_mosaic) == 0:
             warnings.warn(f'No plot data for section {section}, skipping')
@@ -291,7 +289,7 @@ def generate_figures(
 
         fig, axes = plt.subplot_mosaic(
             mosaic=subplot_mosaic,
-            figsize=(ax_width_unit * 3, ax_height * len(subplot_mosaic)),
+            figsize=(fig_width, ax_height * len(subplot_mosaic)),
         )
         ax_citations = axes.get(label_citations, None)
         ax_repo = axes.get(label_repo, None)
