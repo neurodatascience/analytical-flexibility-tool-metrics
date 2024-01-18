@@ -11,9 +11,13 @@ def plot_timeseries(data, x, y, **kwargs):
     sns.despine(ax=ax)
     return ax
 
-def plot_bar(data, x, y, **kwargs):
+def plot_bar(data, x, y, log_scale=False, **kwargs):
     ax = sns.barplot(data=data, x=x, y=y, **kwargs)
-    ax.bar_label(ax.containers[-1], fmt='%.0f')
+    for container in ax.containers:
+        ax.bar_label(container, fmt='%.0f')
+    if log_scale:
+        ax.set_yscale('log')
+        ax.minorticks_off()
     ax.set_yticks([])
     sns.despine(ax=ax, left=True)
     return ax

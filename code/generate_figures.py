@@ -72,21 +72,24 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
 
     return ax
 
-def plot_stars(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
-    ax = plot_bar(
-        data=df_metrics.sort_values(COL_REPO_STARS, ascending=False),
-        x=COL_NAME,
-        y=COL_REPO_STARS,
-        ax=ax,
+def plot_repo(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+    col_metric = 'metric'
+    col_value = 'value'
+    df_metrics = df_metrics.sort_values(COL_REPO_STARS, ascending=False)
+    df_repo = pd.melt(
+        df_metrics,
+        id_vars=[COL_NAME],
+        value_vars=[COL_REPO_STARS, COL_REPO_FORKS],
+        var_name=col_metric,
+        value_name=col_value,
     )
-    return ax
-
-def plot_forks(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
     ax = plot_bar(
-        data=df_metrics.sort_values(COL_REPO_FORKS, ascending=False),
+        data=df_repo,
         x=COL_NAME,
-        y=COL_REPO_FORKS,
+        y=col_value,
+        hue=col_metric,
         ax=ax,
+        log_scale=True,
     )
     return ax
 
@@ -169,15 +172,14 @@ def generate_figures(
         dpath_figs: Path,
         config_dict: Mapping[str, Tuple[str, Callable]] = None,
         ax_height=2,
-        ax_width_unit=1.5,
+        ax_width_unit=3,
         fpath_metrics_in: Path = None,
         fpath_metrics_out: Path = None,
         overwrite: bool = False,
     ):
 
     label_citations = 'citations'
-    label_stars = 'repo_stars'
-    label_forks = 'repo_forks'
+    label_repo = 'repo'
     label_containers = 'container_pulls'
     label_python_timeseries = 'python_downloads_timeseries'
     label_python_total = 'python_downloads_total'
@@ -247,14 +249,14 @@ def generate_figures(
 
         subplot_mosaic = []
         if with_citations:
-            subplot_mosaic.append([label_citations] * 6)
+            subplot_mosaic.append([label_citations] * 3)
         if with_repo:
-            subplot_mosaic.append(([label_stars] * 3) + ([label_forks] * 3))
+            subplot_mosaic.append([label_repo] * 3)
         if with_container_pulls:
-            subplot_mosaic.append([label_containers] * 6)
+            subplot_mosaic.append([label_containers] * 3)
         if with_python_downloads_total:
             subplot_mosaic.append(
-                ([label_python_timeseries] * 4) + ([label_python_total] * 2)
+                ([label_python_timeseries] * 2) + ([label_python_total] * 1)
             )
         
         if len(subplot_mosaic) == 0:
@@ -263,11 +265,10 @@ def generate_figures(
 
         fig, axes = plt.subplot_mosaic(
             mosaic=subplot_mosaic,
-            figsize=(ax_width_unit * 6, ax_height * len(subplot_mosaic)),
+            figsize=(ax_width_unit * 3, ax_height * len(subplot_mosaic)),
         )
         ax_citations = axes.get(label_citations, None)
-        ax_stars = axes.get(label_stars, None)
-        ax_forks = axes.get(label_forks, None)
+        ax_repo = axes.get(label_repo, None)
         ax_containers = axes.get(label_containers, None)
         ax_python_timeseries = axes.get(label_python_timeseries, None)
         ax_python_total = axes.get(label_python_total, None)
@@ -278,17 +279,12 @@ def generate_figures(
                 ax=ax_citations,
             )
 
-        if ax_stars is not None:
-            plot_stars(
+        if ax_repo is not None:
+            plot_repo(
                 df_repo,
-                ax=ax_stars,
+                ax=ax_repo,
             )
 
-        if ax_forks is not None:
-            plot_forks(
-                df_repo,
-                ax=ax_forks,
-            )
         
         if ax_containers is not None:
             plot_containers_pulls(
