@@ -191,7 +191,7 @@ def get_conda_downloads(conda_package):
     if len(downloads_info) == 0:
         return pd.NA
     
-    return downloads_info.to_json(orient='records')
+    return json.loads(downloads_info.to_json(orient='records'))
 
 @metric
 def get_conda_downloads_total(conda_package):
@@ -211,7 +211,7 @@ def get_conda_date(conda_package):
     if len(downloads_info) == 0:
         return pd.NA
     
-    return pd.to_datetime(downloads_info['date']).min()
+    return pd.to_datetime(downloads_info['time']).min()
 
 def compute_metrics(
         fpath_tools: Path,

@@ -13,6 +13,7 @@ from utils import (
     COL_CITATIONS,
     COL_CONTAINER_PULLS,
     COL_CONDA_DOWNLOADS_TIMESERIES,
+    COL_CONDA_DOWNLOADS_TOTAL,
     COL_REPO_FORKS,
     COL_REPO_STARS,
     COL_NAME,
@@ -129,12 +130,12 @@ def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
 
 def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
 
-    df_pypi_metrics = df_metrics.loc[
+    df_python_metrics = df_metrics.loc[
         :,
         [
             COL_NAME,
             COL_PYPI_DOWNLOADS_TIMESERIES,
-            COL_PYTHON_DOWNLOADS_TOTAL,
+            COL_CONDA_DOWNLOADS_TIMESERIES,
         ],
     ]
 
@@ -143,11 +144,11 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
     col_downloads_cumulative = 'downloads_cumulative'
 
     data_for_df_downloads = []
-    for tool, download_entries, total_downloads in df_pypi_metrics.itertuples(index=False):
+    min_date_pypi_all_tools = None
+    for tool, pypi_download_entries, conda_download_entries in df_python_metrics.itertuples(index=False):
 
-        n_recent_downloads = 0
-        min_date = None
-        for entry in download_entries['data']:
+        min_date_pypi = None
+        for entry in pypi_download_entries['data']:
             n_downloads = entry['downloads']
             download_date = pd.to_datetime(entry['date'])
             data_for_df_downloads.append({
@@ -155,23 +156,39 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
                 col_date: download_date,
                 col_downloads: n_downloads,
             })
-            if min_date is None:
-                min_date = download_date
+            if min_date_pypi is None:
+                min_date_pypi = download_date
             else:
-                min_date = min(min_date, download_date)
-            n_recent_downloads += n_downloads
+                min_date_pypi = min(min_date_pypi, download_date)
 
-        # add an initial entry
+        if isinstance(conda_download_entries, list):
+            for entry in conda_download_entries:
+                date = pd.to_datetime(entry['time'])
+                if date < min_date_pypi:
+                    continue
+                data_for_df_downloads.append({
+                    COL_NAME: tool,
+                    col_date: date,
+                    col_downloads: entry['counts'],
+                })
+
+        if min_date_pypi_all_tools is None:
+            min_date_pypi_all_tools = min_date_pypi
+        else:
+            min_date_pypi_all_tools = min(min_date_pypi_all_tools, min_date_pypi)
+
+    # add initial entry for all tools
+    for tool in df_metrics[COL_NAME].unique():
         data_for_df_downloads.append({
             COL_NAME: tool,
-            col_date: min_date,
-            col_downloads: total_downloads - n_recent_downloads,
+            col_date: min_date_pypi,
+            col_downloads: 0,
         })
     
-    # TODO also do conda downloads
-
-    df_downloads = pd.DataFrame(data_for_df_downloads).sort_values([COL_NAME, col_date])
+    df_downloads = pd.DataFrame(data_for_df_downloads).sort_values([COL_NAME, col_date, col_downloads])
     df_downloads[col_downloads_cumulative] = df_downloads.groupby(COL_NAME)[col_downloads].cumsum()
+
+    print(df_downloads.loc[df_downloads[COL_NAME] == 'C-PAC'].head())
 
     ax = plot_timeseries(
         data=df_downloads,
@@ -261,7 +278,7 @@ def generate_figures(
             (
                 pd.notna(df_metrics_section[generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL)])
                 | pd.notna(df_metrics_section[COL_PYPI_DOWNLOADS_TIMESERIES])
-                # | pd.notna(df_metrics_section[COL_CONDA_DOWNLOADS_TIMESERIES])
+                | pd.notna(df_metrics_section[COL_CONDA_DOWNLOADS_TIMESERIES])
             )
         ]
         n_python_downloads_total = df_python_downloads[COL_PYTHON_DOWNLOADS_TOTAL].sum()
