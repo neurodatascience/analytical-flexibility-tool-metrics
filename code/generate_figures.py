@@ -11,9 +11,9 @@ import seaborn as sns
 
 from utils import (
     COL_CITATIONS,
+    COL_COLOR,
     COL_CONTAINER_PULLS,
     COL_CONDA_DOWNLOADS_TIMESERIES,
-    COL_CONDA_DOWNLOADS_TOTAL,
     COL_REPO_FORKS,
     COL_REPO_STARS,
     COL_NAME,
@@ -42,7 +42,7 @@ CITATION_CORRECTIONS = {
     },
 }
 
-def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None) -> plt.Axes:
+def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, palette=None) -> plt.Axes:
 
     if date_corrections is None:
         date_corrections = {}
@@ -94,11 +94,12 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None) -> 
         y=col_n_citations_cumulative,
         hue=COL_NAME,
         ax=ax,
+        palette=palette,
     )
 
     return ax
 
-def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None) -> plt.Axes:
+def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> plt.Axes:
     if hatches is None:
         hatches = [None, '/']
     if len(hatches) != 2:
@@ -132,21 +133,23 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None) -> plt.Axes:
     # set bar colour and hatch style
     for i_tool, tool in enumerate(ax.get_xticklabels()):
         for i_patch, patch in enumerate(ax.patches[i_tool:2*n_tools:n_tools]):
-            patch.set_facecolor(sns.color_palette()[i_tool])
+            patch.set_facecolor(palette[tool.get_text()])
             patch.set_hatch(hatches[i_patch])
 
     return ax
 
-def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
     ax = plot_bar(
         data=df_metrics.sort_values(generate_col_standardized(COL_CONTAINER_PULLS), ascending=False),
         x=COL_NAME,
         y=generate_col_standardized(COL_CONTAINER_PULLS),
         ax=ax,
+        hue=COL_NAME,
+        palette=palette,
     )
     return ax
 
-def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
 
     df_python_metrics = df_metrics.loc[
         :,
@@ -212,18 +215,52 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
         y=col_downloads_cumulative,
         hue=COL_NAME,
         ax=ax,
+        palette=palette,
     )
 
     return ax
 
-def plot_python_total(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+def plot_python_total(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
     ax = plot_bar(
         data=df_metrics.sort_values(generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL), ascending=False),
         y=generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL),
         x=COL_NAME,
         ax=ax,
+        hue=COL_NAME,
+        palette=palette,
     )
     return ax
+
+def process_palette(df_metrics: pd.DataFrame, palette=None) -> Mapping[str, str]:
+    if palette is None:
+        palette = {}
+        for _, df_colors in df_metrics.groupby(COL_SECTION):
+            tools = df_colors[COL_NAME].sort_values()
+            colors = sns.color_palette(n_colors=len(df_colors))
+            palette.update({
+                tool: color
+                for tool, color in zip(tools, colors)
+            })
+    elif COL_COLOR in df_metrics.columns:
+        palette = {
+            tool: color
+            for tool, color
+            in df_metrics[[COL_NAME, COL_COLOR]].itertuples(index=False)
+        }
+    else:
+        # validate custom palette
+        if not isinstance(palette, Mapping):
+            raise TypeError(
+                'palette must be a Mapping (tool_name -> color)'
+                f', got {type(palette)}'
+            )
+        for tool in df_metrics[COL_NAME]:
+            if tool not in palette:
+                raise ValueError(
+                    f'custom palette is missing color for tool {tool}'
+                )
+            
+    return palette
 
 def generate_figures(
         fpath_tools: Path,
@@ -235,6 +272,7 @@ def generate_figures(
         fpath_metrics_out: Path = None,
         overwrite: bool = False,
         citation_corrections: Mapping[str, Mapping[str, str]] = None,
+        palette = None,
     ):
 
     label_citations = 'citations'
@@ -265,6 +303,9 @@ def generate_figures(
 
     # create figs directory if needed
     dpath_figs.mkdir(exist_ok=True)
+
+    # process palette
+    palette = process_palette(df_metrics, palette=palette)
 
     for section, df_metrics_section in df_metrics.groupby(COL_SECTION):
 
@@ -335,31 +376,35 @@ def generate_figures(
                 df_citations,
                 ax=ax_citations,
                 date_corrections=citation_corrections,
+                palette=palette,
             )
 
         if ax_repo is not None:
             plot_repo(
                 df_repo,
                 ax=ax_repo,
+                palette=palette,
             )
 
-        
         if ax_containers is not None:
             plot_containers_pulls(
                 df_container_pulls,
                 ax=ax_containers,
+                palette=palette,
             )
 
         if ax_python_timeseries is not None:
             plot_python_timeseries(
                 df_metrics_section.loc[df_metrics_section[COL_PYPI_DOWNLOADS_TIMESERIES].notna()],
                 ax=ax_python_timeseries,
+                palette=palette,
             )
 
         if ax_python_total is not None:
             plot_python_total(
                 df_python_downloads,
                 ax=ax_python_total,
+                palette=palette,
             )
 
         fig.tight_layout()
