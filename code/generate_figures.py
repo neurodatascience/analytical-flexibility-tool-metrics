@@ -98,10 +98,21 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None) -> 
 
     return ax
 
-def plot_repo(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
+def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None) -> plt.Axes:
+    if hatches is None:
+        hatches = [None, '/']
+    if len(hatches) != 2:
+        raise ValueError(
+            'hatches must be a list of length 2'
+            ' (one hatch style for each of repo stars and forks)'
+            f', got {hatches}'
+        )
+    
+    df_metrics = df_metrics.sort_values(COL_REPO_STARS, ascending=False)
+    n_tools = len(df_metrics[COL_NAME].unique())
+    
     col_metric = 'metric'
     col_value = 'value'
-    df_metrics = df_metrics.sort_values(COL_REPO_STARS, ascending=False)
     df_repo = pd.melt(
         df_metrics,
         id_vars=[COL_NAME],
@@ -117,6 +128,13 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
         ax=ax,
         log_scale=True,
     )
+
+    # set bar colour and hatch style
+    for i_tool, tool in enumerate(ax.get_xticklabels()):
+        for i_patch, patch in enumerate(ax.patches[i_tool:2*n_tools:n_tools]):
+            patch.set_facecolor(sns.color_palette()[i_tool])
+            patch.set_hatch(hatches[i_patch])
+
     return ax
 
 def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
@@ -187,8 +205,6 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None) -> plt.Axes:
     
     df_downloads = pd.DataFrame(data_for_df_downloads).sort_values([COL_NAME, col_date, col_downloads])
     df_downloads[col_downloads_cumulative] = df_downloads.groupby(COL_NAME)[col_downloads].cumsum()
-
-    print(df_downloads.loc[df_downloads[COL_NAME] == 'C-PAC'].head())
 
     ax = plot_timeseries(
         data=df_downloads,
