@@ -23,7 +23,7 @@ from utils import (
     generate_col_standardized,
 )
 from metrics import compute_metrics
-from plotting import plot_timeseries, plot_bar
+from plotting import add_legend, plot_timeseries, plot_bar
 
 CITATION_CORRECTIONS = {
     # BIDS Apps
@@ -110,7 +110,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         )
     
     df_metrics = df_metrics.sort_values(COL_REPO_STARS, ascending=False)
-    n_tools = len(df_metrics[COL_NAME].unique())
+    n_tools = len(df_metrics)
     
     col_metric = 'metric'
     col_value = 'value'
@@ -199,7 +199,7 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> p
             min_date_pypi_all_tools = min(min_date_pypi_all_tools, min_date_pypi)
 
     # add initial entry for all tools
-    for tool in df_metrics[COL_NAME].unique():
+    for tool in df_metrics[COL_NAME]:
         data_for_df_downloads.append({
             COL_NAME: tool,
             col_date: min_date_pypi,
@@ -406,6 +406,15 @@ def generate_figures(
                 ax=ax_python_total,
                 palette=palette,
             )
+
+        add_legend(
+            fig,
+            palette={
+                tool: palette[tool]
+                for tool in df_metrics_section[COL_NAME].sort_values()
+            },
+            title='Tool name',
+        )
 
         fig.tight_layout()
 
