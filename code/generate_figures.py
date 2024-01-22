@@ -131,7 +131,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         hue=col_metric,
         ax=ax,
         log_scale=True,
-        y_max_factor=1.5,
+        y_max_factor=1.6,
     )
 
     # set bar colour and hatch style
@@ -313,6 +313,7 @@ def generate_figures(
 
     sns.set_theme(style='ticks')
     plt.rcParams['axes.titlesize'] = 12
+    plt.rcParams['axes.titleweight'] = 'bold'
     
     if fpath_metrics_in is not None:
         print(f'Loading metrics from {fpath_metrics_in}')
@@ -449,7 +450,6 @@ def generate_figures(
                 }
                 for tool in df_metrics_section[COL_NAME].sort_values()
             },
-            title='Tool',
             loc='center left',
             bbox_to_anchor=(1, 0.5),
             frameon=False,

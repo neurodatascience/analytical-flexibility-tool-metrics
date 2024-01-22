@@ -7,6 +7,8 @@ import seaborn as sns
 from matplotlib.ticker import FormatStrFormatter
 
 def add_legend(fig_or_ax: plt.Figure | plt.Axes, patch_args_by_label: Mapping[str, Mapping], title=None, **kwargs):
+    if 'title_fontproperties' not in kwargs:
+        kwargs['title_fontproperties'] = {'weight': 'bold'}
     legend_handles = [
         mpatches.Patch(label=label, **patch_args)
         for label, patch_args in patch_args_by_label.items()
@@ -50,7 +52,7 @@ def plot_bar(data, x, y, log_scale=False, y_max_factor=1.2, **kwargs):
     else:
         y_max *= y_max_factor
 
-    ax.set_ylim(bottom=1, top=y_max)
+    ax.set_ylim(bottom=1e-1, top=y_max)
     ax.set_yticks([])
     ax.set_xlabel('')
     ax.set_ylabel('')
