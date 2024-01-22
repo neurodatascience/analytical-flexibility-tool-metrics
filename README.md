@@ -112,7 +112,7 @@ See [`data/tools.csv`](data/tools.csv) for an example input file.
 * `docker1`: Container image name on DockerHub.
 * `docker2`: Same as `docker1`, for tools with container images published in two different places (e.g., because they were moved).
 * `github_container`: Package name for GitHub container registry.
-    * **Note**: It seems there is no GitHub API that provides this information, so this is currently not implemented.
+    * **Note**: It seems there is no GitHub API that provides this information at the time of writing (see [here](https://github.com/badges/shields/issues/5594)), so this is currently not implemented.
 * `pypi`: Package name for Python packages distributed through Pypi.
 * `conda`: Package name for Python packages distributed through a `conda` channel.
 
