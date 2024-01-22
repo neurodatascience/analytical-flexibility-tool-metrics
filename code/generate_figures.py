@@ -97,6 +97,8 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
         palette=palette,
     )
 
+    ax.set_title('Citations over time')
+
     return ax
 
 def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> plt.Axes:
@@ -150,6 +152,8 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         frameon=False,
     )
 
+    ax.set_title('Code repository metrics')
+
     return ax
 
 def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
@@ -161,6 +165,7 @@ def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None, palette=None) -> pl
         hue=COL_NAME,
         palette=palette,
     )
+    ax.set_title('Container pulls per month')
     return ax
 
 def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
@@ -232,6 +237,8 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> p
         palette=palette,
     )
 
+    ax.set_title('Python package downloads in the last 180 days')
+
     return ax
 
 def plot_python_total(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
@@ -243,6 +250,7 @@ def plot_python_total(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Ax
         hue=COL_NAME,
         palette=palette,
     )
+    ax.set_title('Total Python package downloads')
     return ax
 
 def process_palette(df_metrics: pd.DataFrame, palette=None) -> Mapping[str, str]:

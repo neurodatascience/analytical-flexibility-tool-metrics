@@ -28,6 +28,8 @@ def plot_timeseries(data, x, y, log_scale=True, **kwargs):
     ax.get_yaxis().set_major_formatter(FormatStrFormatter('%.0f'))
     ax.set_ylim(bottom=1)
     ax.set_xlim(left=min(data[x]), right=max(data[x]))
+    ax.set_xlabel('')
+    ax.set_ylabel('')
     sns.despine(ax=ax)
     return ax
 
@@ -41,5 +43,7 @@ def plot_bar(data, x, y, log_scale=False, **kwargs):
         ax.set_yscale('log')
         ax.minorticks_off()
     ax.set_yticks([])
+    ax.set_xlabel('')
+    ax.set_ylabel('')
     sns.despine(ax=ax, left=True)
     return ax
