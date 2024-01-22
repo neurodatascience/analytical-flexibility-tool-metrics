@@ -136,6 +136,20 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
             patch.set_facecolor(palette[tool.get_text()])
             patch.set_hatch(hatches[i_patch])
 
+    # add legend
+    add_legend(
+        ax,
+        patch_args_by_label={
+            f'Number of {metric}': {
+                'facecolor': 'black',
+                'edgecolor': 'white',
+                'hatch': hatch if hatch is None else hatch * 3,
+            }
+            for metric, hatch in zip(['stars', 'forks'], hatches)
+        },
+        frameon=False,
+    )
+
     return ax
 
 def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
@@ -409,8 +423,10 @@ def generate_figures(
 
         add_legend(
             fig,
-            palette={
-                tool: palette[tool]
+            patch_args_by_label={
+                tool: {
+                    'color': palette[tool]
+                }
                 for tool in df_metrics_section[COL_NAME].sort_values()
             },
             title='Tool',

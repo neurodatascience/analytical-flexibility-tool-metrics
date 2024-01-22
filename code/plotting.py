@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import FormatStrFormatter
 
-def add_legend(fig: plt.Figure, palette: Mapping[str, str], title=None, **kwargs):
+def add_legend(fig_or_ax: plt.Figure | plt.Axes, patch_args_by_label: Mapping[str, Mapping], title=None, **kwargs):
     legend_handles = [
-        mpatches.Patch(color=color, label=label)
-        for label, color in palette.items()
+        mpatches.Patch(label=label, **patch_args)
+        for label, patch_args in patch_args_by_label.items()
     ]
-    legend = fig.legend(handles=legend_handles, **kwargs)
+    legend = fig_or_ax.legend(handles=legend_handles, **kwargs)
     legend.set_title(title)
     return legend
 
