@@ -113,7 +113,7 @@ See [`data/tools.csv`](data/tools.csv) for an example input file.
 * `docker2`: Same as `docker1`, for tools with container images published in two different places (e.g., because they were moved).
 * `github_container`: Package name for GitHub container registry.
     * **Note**: It seems there is no GitHub API that provides this information at the time of writing (see [here](https://github.com/badges/shields/issues/5594)), so this is currently not implemented.
-* `pypi`: Package name for Python packages distributed through Pypi.
+* `pypi`: Package name for Python packages distributed through PyPI.
 * `conda`: Package name for Python packages distributed through a `conda` channel.
 
 ## Output
@@ -129,5 +129,5 @@ The metrics used in each panel are:
     * Column(s) used: `github`, `gitlab`
 3. **Container pulls**: Number of container downloads obtained from the DockerHub API.
     * Column(s) used: `docker1`, `docker2`
-4. **Python package downloads in the last 180 days**: Number of downloads from Pypi (obtained using [`pypistats`](https://pypistats.org/)) and/or `conda` (obtained using [`condastats`](https://condastats.readthedocs.io/en/latest/)).
+4. **Python package downloads in the last 180 days**: Number of downloads from PyPI (obtained using [`pypistats`](https://pypistats.org/)) and/or `conda` (obtained using [`condastats`](https://condastats.readthedocs.io/en/latest/)).
     * Column(s) used: `pypi`, `conda`
