@@ -2,7 +2,17 @@
 
 Metrics for tools described in analytical flexibility review paper
 
-## Instructions
+- [analytical-flexibility-tool-metrics](#analytical-flexibility-tool-metrics)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Example calls](#example-calls)
+      - [Update figures used in review paper](#update-figures-used-in-review-paper)
+      - [Regenerate figures without recomputing the metrics](#regenerate-figures-without-recomputing-the-metrics)
+      - [Specify custom input file and output figures directory](#specify-custom-input-file-and-output-figures-directory)
+  - [Data format](#data-format)
+  - [Output](#output)
+
+## Installation
 
 Clone this repository: 
 ```bash
@@ -45,5 +55,79 @@ The latest versions of the required packages will most likely work. The exceptio
 * `requests` 2.31.0
 * `seaborn` 0.13.0
 
-The main script is `code/generate_figures.py`.
-<!-- TODO show usage and example command -->
+## Usage
+
+The main script is `code/generate_figures.py`:
+```
+usage: generate_figures.py [-h] [--tools FPATH_TOOLS] [--figs-dir DPATH_FIGS]
+                           [--load-metrics METRICS_CSV_IN]
+                           [--save-metrics METRICS_CSV_OUT] [--overwrite]
+
+options:
+  -h, --help            show this help message and exit
+  --tools FPATH_TOOLS   path to CSV file containing information about tools
+                        (default: <PATH_TO_REPO>/data/tools.csv)
+  --figs-dir DPATH_FIGS
+                        path to output figures directory (default:
+                        <PATH_TO_REPO>/figs)
+  --load-metrics METRICS_CSV_IN
+                        path to read metrics CSV file (optional). Note: --load-
+                        metrics and --save-metrics cannot both be specified. Also,
+                        if --load-metrics is specified, --tools is ignored
+  --save-metrics METRICS_CSV_OUT
+                        path to write metrics CSV file (optional). Note: --load-
+                        metrics and --save-metrics cannot both be specified
+  --overwrite           overwrite existing figures (and metrics file if applicable)
+  ```
+
+### Example calls
+
+*All examples assume the working directory is the root directory of this repo.*
+
+#### Update figures used in review paper
+```bash
+./code/generate_figures.py --overwrite
+```
+
+#### Regenerate figures without recomputing the metrics
+```bash
+./code/generate_figures.py --load-metrics data/metrics.csv --overwrite
+```
+
+#### Specify custom input file and output figures directory
+```bash
+./code/generate_figures.py --tools <PATH_TO_TOOLS_FILE> --figs-dir <PATH_TO_FIGS_DIR>
+```
+
+## Data format
+
+See `data/tools.csv` for an example input file.
+
+* `tool_name`: Name of the tool as it it appear in the figures.
+* `review_paper_section`: Used to group tools into separate figures and to determine the name of the saved image file.
+* `doi`: [Digital Object Identifier](https://www.doi.org/), such that `https://www.doi.org/{doi}` will resolve.
+* `github`: GitHub repository owner and name (e.g., `neurodatascience/analytical-flexibility-tool-metrics`).
+* `gitlab`: GitLab project ID, which can be found in the raw HTML source for the project's GitLab page (look for something like `project-id`/`data-project-id`).
+    * See [here](https://stackoverflow.com/a/45500237) (might be outdated).
+* `docker1`: Container image name on DockerHub.
+* `docker2`: Same as `docker1`, for tools with container images published in two different places (e.g., because they were moved).
+* `github_container`: Package name for GitHub container registry.
+    * **Note**: It seems there is no GitHub API that provides this information, so this is currently not implemented.
+* `pypi`: Package name for Python packages distributed through Pypi.
+* `conda`: Package name for Python packages distributed through a `conda` channel.
+
+## Output
+
+The script generates figures (by default in a `figs` directory) with panels for each of the computed metrics (or metric groups). Here is an example of a complete figure:
+
+![Workflow engines figure](figs/2_2_workflow_engines.png)
+
+The metrics used in each panel are:
+1. **Citations over time**: Cumulative number of citations obtained from https://opencitations.net/
+    * Column(s) used: `doi`.
+2. **Code repository metrics**: Number of stars and forks obtained from the GitHub and/or GitLab APIs.
+    * Column(s) used: `github`, `gitlab`
+3. **Container pulls**: Number of container downloads obtained from the DockerHub API.
+    * Column(s) used: `docker1`, `docker2`
+4. **Python package downloads in the last 180 days**: Number of downloads from Pypi (obtained using [`pypistats`](https://pypistats.org/)) and/or `conda` (obtained using [`condastats`](https://condastats.readthedocs.io/en/latest/)).
+    * Column(s) used: `pypi`, `conda`
