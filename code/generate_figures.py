@@ -413,7 +413,10 @@ def generate_figures(
                 tool: palette[tool]
                 for tool in df_metrics_section[COL_NAME].sort_values()
             },
-            title='Tool name',
+            title='Tool',
+            loc='center left',
+            bbox_to_anchor=(1, 0.5),
+            frameon=False,
         )
 
         fig.tight_layout()

@@ -5,18 +5,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import FormatStrFormatter
 
-def add_legend(fig: plt.Figure, palette: Mapping[str, str], title=None):
+def add_legend(fig: plt.Figure, palette: Mapping[str, str], title=None, **kwargs):
     legend_handles = [
         mpatches.Patch(color=color, label=label)
         for label, color in palette.items()
     ]
-    legend = fig.legend(
-        handles=legend_handles,
-        loc='center left',
-        bbox_to_anchor=(1, 0.5),
-    )
+    legend = fig.legend(handles=legend_handles, **kwargs)
     legend.set_title(title)
-    return fig
+    return legend
 
 def plot_timeseries(data, x, y, log_scale=True, **kwargs):
     if 'legend' not in kwargs:
