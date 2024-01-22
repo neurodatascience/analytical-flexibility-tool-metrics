@@ -14,7 +14,7 @@ Fastr,2.2 Workflow engines,10.3389/fict.2016.00015,,15795086,,,,fastr,
 Nextflow,2.2 Workflow engines,10.1038/nbt.3820,nextflow-io/nextflow,,,,,nextflow,nextflow
 Pydra,2.2 Workflow engines,,nipype/pydra,,,,,pydra,
 NeuroCI,2.3 Continuous integration,10.1109/eScience55777.2022.00025,neurodatascience/NeuroCI,,,,,,
-DataLad,3 Data provenance,10.21105/joss.03262,datalad/datalad,,,,,datalad,
+DataLad,3 Data provenance,10.21105/joss.03262,datalad/datalad,,,,,datalad,datalad
 BABS,3 Data provenance,10.1101/2023.08.16.552472,PennLINC/babs,,,,,babs,
 Verrou,4 Numerical stability,,edf-hpc/verrou,,,,,,
 Verificarlo,4 Numerical stability,10.1109/ARITH.2016.31,verificarlo/verificarlo,,verificarlo/verificarlo,,,,
