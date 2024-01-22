@@ -36,6 +36,8 @@ def plot_timeseries(data, x, y, log_scale=True, **kwargs):
 def plot_bar(data, x, y, log_scale=False, **kwargs):
     if 'legend' not in kwargs:
         kwargs['legend'] = False
+    if 'saturation' not in kwargs:
+        kwargs['saturation'] = 1
     ax = sns.barplot(data=data, x=x, y=y, **kwargs)
     for container in ax.containers:
         ax.bar_label(container, fmt='%.0f')
