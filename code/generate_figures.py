@@ -8,6 +8,7 @@ from typing import Callable, Mapping, Tuple
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.dates import MonthLocator, YearLocator
 
 from utils import (
     COL_CITATIONS,
@@ -98,6 +99,7 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
     )
 
     ax.set_title('Citations over time')
+    ax.xaxis.set_major_locator(YearLocator())
 
     return ax
 
@@ -150,6 +152,9 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
             for metric, hatch in zip(['stars', 'forks'], hatches)
         },
         frameon=False,
+        loc='upper right',
+        borderpad=0,
+        bbox_to_anchor=(1, 1),
     )
 
     ax.set_title('Code repository metrics')
@@ -238,6 +243,7 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> p
     )
 
     ax.set_title('Python package downloads in the last 180 days')
+    ax.xaxis.set_major_locator(MonthLocator())
 
     return ax
 
@@ -289,7 +295,7 @@ def generate_figures(
         dpath_figs: Path,
         config_dict: Mapping[str, Tuple[str, Callable]] = None,
         ax_height=2,
-        fig_width=10,
+        fig_width=8,
         fpath_metrics_in: Path = None,
         fpath_metrics_out: Path = None,
         overwrite: bool = False,
@@ -303,7 +309,8 @@ def generate_figures(
     label_python_timeseries = 'python_downloads_timeseries'
     label_python_total = 'python_downloads_total'
 
-    sns.set_theme(context='paper', style='ticks')
+    sns.set_theme(style='ticks')
+    plt.rcParams['axes.titlesize'] = 12
     
     if fpath_metrics_in is not None:
         print(f'Loading metrics from {fpath_metrics_in}')
