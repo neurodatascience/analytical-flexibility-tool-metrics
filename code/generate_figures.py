@@ -505,7 +505,7 @@ if __name__ == '__main__':
     fpath_metrics_out = args.metrics_csv_out
     overwrite = args.overwrite
 
-    if fpath_metrics_in is None and fpath_metrics_out is None:
+    if fpath_metrics_in is not None and fpath_metrics_out is not None:
         raise RuntimeError(
             '--load-metrics and --save-metrics cannot both be specified'
         )
