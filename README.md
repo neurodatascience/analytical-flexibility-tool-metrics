@@ -118,12 +118,12 @@ See `data/tools.csv` for an example input file.
 
 ## Output
 
-The script generates figures (by default in a `figs` directory) with panels for each of the computed metrics (or metric groups). Here is an example of a complete figure:
+The script generates figures (by default in the [`figs`](figs) directory) with panels for each of the computed metrics (or metric groups). Here is an example of a complete figure:
 
 ![Workflow engines figure](figs/2_2_workflow_engines.png)
 
 The metrics used in each panel are:
-1. **Citations over time**: Cumulative number of citations obtained from https://opencitations.net/
+1. **Citations over time**: Cumulative number of citations obtained from the [OpenCitations](https://opencitations.net/) API.
     * Column(s) used: `doi`.
 2. **Code repository metrics**: Number of stars and forks obtained from the GitHub and/or GitLab APIs.
     * Column(s) used: `github`, `gitlab`
