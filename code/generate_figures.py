@@ -455,6 +455,20 @@ def generate_figures(
             frameon=False,
         )
 
+        # add panel labels
+        for i_ax, ax in enumerate(axes.values()):
+            ax: plt.Axes
+            ax.text(
+                x=-0.05,
+                y=1.05,
+                s=chr(ord('A') + i_ax),
+                transform=ax.transAxes,
+                fontsize=14,
+                fontweight='bold',
+                va='bottom',
+                ha='right',
+            )
+
         fig.tight_layout()
 
         section_name_clean = section.lower()
