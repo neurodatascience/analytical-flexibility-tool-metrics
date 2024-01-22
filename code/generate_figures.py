@@ -465,21 +465,33 @@ def generate_figures(
 
 if __name__ == '__main__':
 
+    dpath_root = Path(__file__).parent.parent
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'tools_csv',
+        '--tools',
+        dest='tools_csv',
         help='path to CSV file containing information about tools',
         type=Path,
+        default=dpath_root / 'data' / 'tools.csv',
+        required=False,
     )
     parser.add_argument(
-        'figs_dir',
+        '--figs-dir',
+        dest='figs_dir',
         help='path to output figures directory',
         type=Path,
+        default=dpath_root / 'figs',
+        required=False,
     )
     parser.add_argument(
         '--load-metrics',
         dest='metrics_csv_in',
-        help='path to read metrics CSV file (optional). Note: --load-metrics and --save-metrics cannot both be specified',
+        help=(
+            'path to read metrics CSV file (optional). '
+            'Note: --load-metrics and --save-metrics cannot both be specified. '
+            'Also, if --load-metrics is specified, --tools is ignored'
+        ),
         type=Path,
         default=None,
         required=False,
@@ -505,6 +517,14 @@ if __name__ == '__main__':
     fpath_metrics_out = args.metrics_csv_out
     overwrite = args.overwrite
 
+    if fpath_tools is None and fpath_metrics_in is None:
+        raise RuntimeError(
+            'One of --tools and --load-metrics must be specified'
+        )
+    if fpath_tools is not None and fpath_metrics_in is not None:
+        warnings.warn(
+            'Both --tools and --load-metrics specified, ignoring --tools'
+        )
     if fpath_metrics_in is not None and fpath_metrics_out is not None:
         raise RuntimeError(
             '--load-metrics and --save-metrics cannot both be specified'
