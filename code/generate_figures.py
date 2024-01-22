@@ -460,7 +460,7 @@ def generate_figures(
             ax: plt.Axes
             ax.text(
                 x=-0.05,
-                y=1.05,
+                y=1.08,
                 s=chr(ord('A') + i_ax),
                 transform=ax.transAxes,
                 fontsize=14,
