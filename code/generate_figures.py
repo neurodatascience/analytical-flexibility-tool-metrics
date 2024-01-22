@@ -466,22 +466,24 @@ def generate_figures(
 if __name__ == '__main__':
 
     dpath_root = Path(__file__).parent.parent
+    default_fpath_tools = dpath_root / 'data' / 'tools.csv'
+    default_dpath_figs = dpath_root / 'figs'
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--tools',
-        dest='tools_csv',
-        help='path to CSV file containing information about tools',
+        dest='fpath_tools',
+        help=f'path to CSV file containing information about tools (default: {default_fpath_tools})',
         type=Path,
-        default=dpath_root / 'data' / 'tools.csv',
+        default=default_fpath_tools,
         required=False,
     )
     parser.add_argument(
         '--figs-dir',
-        dest='figs_dir',
-        help='path to output figures directory',
+        dest='dpath_figs',
+        help=f'path to output figures directory (default: {default_dpath_figs})',
         type=Path,
-        default=dpath_root / 'figs',
+        default=default_dpath_figs,
         required=False,
     )
     parser.add_argument(
@@ -511,8 +513,8 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
-    fpath_tools = args.tools_csv
-    dpath_figs = args.figs_dir
+    fpath_tools = args.fpath_tools
+    dpath_figs = args.dpath_figs
     fpath_metrics_in = args.metrics_csv_in
     fpath_metrics_out = args.metrics_csv_out
     overwrite = args.overwrite
