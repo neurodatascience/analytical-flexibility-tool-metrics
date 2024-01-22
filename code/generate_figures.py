@@ -113,7 +113,6 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
             f', got {hatches}'
         )
     
-    df_metrics = df_metrics.sort_values(COL_REPO_STARS, ascending=False)
     n_tools = len(df_metrics)
     
     col_metric = 'metric'
@@ -132,6 +131,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         hue=col_metric,
         ax=ax,
         log_scale=True,
+        y_max_factor=1.3,
     )
 
     # set bar colour and hatch style
@@ -152,9 +152,10 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
             for metric, hatch in zip(['stars', 'forks'], hatches)
         },
         frameon=False,
-        loc='upper right',
         borderpad=0,
+        loc='center right',
         bbox_to_anchor=(1, 1),
+        labelspacing=0.25,
     )
 
     ax.set_title('Code repository metrics')
@@ -163,7 +164,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
 
 def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
     ax = plot_bar(
-        data=df_metrics.sort_values(generate_col_standardized(COL_CONTAINER_PULLS), ascending=False),
+        data=df_metrics,
         x=COL_NAME,
         y=generate_col_standardized(COL_CONTAINER_PULLS),
         ax=ax,
@@ -249,7 +250,7 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> p
 
 def plot_python_total(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
     ax = plot_bar(
-        data=df_metrics.sort_values(generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL), ascending=False),
+        data=df_metrics,
         y=generate_col_standardized(COL_PYTHON_DOWNLOADS_TOTAL),
         x=COL_NAME,
         ax=ax,
@@ -335,6 +336,9 @@ def generate_figures(
 
     # process palette
     palette = process_palette(df_metrics, palette=palette)
+
+    # sort tools
+    df_metrics = df_metrics.sort_values(COL_NAME)
 
     for section, df_metrics_section in df_metrics.groupby(COL_SECTION):
 
