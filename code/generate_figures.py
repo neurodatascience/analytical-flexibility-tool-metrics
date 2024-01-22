@@ -145,7 +145,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         ax,
         patch_args_by_label={
             f'Number of {metric}': {
-                'facecolor': 'black',
+                'facecolor': 'grey',
                 'edgecolor': 'white',
                 'hatch': hatch if hatch is None else hatch * 3,
             }
