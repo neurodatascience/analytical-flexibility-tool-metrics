@@ -461,7 +461,7 @@ def generate_figures(
         for char in ' .-':
             section_name_clean = section_name_clean.replace(char, '_')
         fpath_fig = dpath_figs / f'{section_name_clean}.png'
-        fig.savefig(fpath_fig, bbox_inches='tight')
+        fig.savefig(fpath_fig, dpi=300, bbox_inches='tight')
 
 if __name__ == '__main__':
 
