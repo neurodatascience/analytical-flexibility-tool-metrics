@@ -131,7 +131,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         hue=col_metric,
         ax=ax,
         log_scale=True,
-        y_max_factor=1.3,
+        y_max_factor=1.5,
     )
 
     # set bar colour and hatch style
@@ -166,12 +166,13 @@ def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None, palette=None) -> pl
     ax = plot_bar(
         data=df_metrics,
         x=COL_NAME,
-        y=generate_col_standardized(COL_CONTAINER_PULLS),
+        y=COL_CONTAINER_PULLS,
         ax=ax,
         hue=COL_NAME,
         palette=palette,
+        log_scale=True,
     )
-    ax.set_title('Container pulls per month')
+    ax.set_title('Container pulls')
     return ax
 
 def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Axes:
