@@ -101,7 +101,7 @@ options:
 
 ## Data format
 
-See `data/tools.csv` for an example input file.
+See [`data/tools.csv`](data/tools.csv) for an example input file.
 
 * `tool_name`: Name of the tool as it it appear in the figures.
 * `review_paper_section`: Used to group tools into separate figures and to determine the name of the saved image file.
