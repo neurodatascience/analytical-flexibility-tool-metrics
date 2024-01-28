@@ -3,6 +3,7 @@ from typing import Mapping
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import FormatStrFormatter
 
@@ -17,17 +18,19 @@ def add_legend(fig_or_ax: plt.Figure | plt.Axes, patch_args_by_label: Mapping[st
     legend.set_title(title)
     return legend
 
-def plot_timeseries(data, x, y, log_scale=True, **kwargs):
+def plot_timeseries(data: pd.DataFrame, x, y, log_scale=True, **kwargs):
     if 'legend' not in kwargs:
         kwargs['legend'] = False
     ax = sns.lineplot(data=data, x=x, y=y, **kwargs)
     if log_scale:
         ax.set_yscale('log')
         ax.minorticks_off()
-        _, y_max = ax.get_ylim()
-        if y_max < 100:
-            ax.set_ylim(top=100)
-            
+        greatest_power_of_ten = max(2, math.floor(math.log10(data[y].max())))
+        if greatest_power_of_ten < 4:
+            yticks = [10 ** i for i in range(greatest_power_of_ten + 1)]
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(yticks)
+    
     ax.get_yaxis().set_major_formatter(FormatStrFormatter('%.0f'))
     ax.set_ylim(bottom=1)
     ax.set_xlim(left=min(data[x]), right=max(data[x]))
@@ -36,7 +39,7 @@ def plot_timeseries(data, x, y, log_scale=True, **kwargs):
     sns.despine(ax=ax)
     return ax
 
-def plot_bar(data, x, y, log_scale=False, y_max_factor=1.2, **kwargs):
+def plot_bar(data: pd.DataFrame, x, y, log_scale=False, y_max_factor=1.2, **kwargs):
     if 'legend' not in kwargs:
         kwargs['legend'] = False
     if 'saturation' not in kwargs:
