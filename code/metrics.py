@@ -60,10 +60,15 @@ def get_response_json(url, **kwargs):
             if not response.ok:
                 print(json.dumps(response.json(), indent=4))
                 raise RuntimeError
-        except Exception:
-            raise RuntimeError(
-                f'{response.status_code} error for HTTP GET request at {url}'
-            )
+        except Exception as exception:
+            try:
+                raise RuntimeError(
+                    f'{response.status_code} error for HTTP GET request at {url}'
+                )
+            except UnboundLocalError:
+                raise RuntimeError(
+                    f'Error for HTTP GET request at {url}: {exception}'
+                )
 
         _REQUESTS_CACHE[url] = response
     
