@@ -265,7 +265,7 @@ def process_palette(df_metrics: pd.DataFrame, palette=None) -> Mapping[str, str]
     if palette is None:
         palette = {}
         for _, df_colors in df_metrics.groupby(COL_SECTION):
-            tools = df_colors[COL_NAME].sort_values()
+            tools = df_colors[COL_NAME]
             colors = sns.color_palette(n_colors=len(df_colors))
             palette.update({
                 tool: color
@@ -339,8 +339,6 @@ def generate_figures(
     # process palette
     palette = process_palette(df_metrics, palette=palette)
 
-    # sort tools
-    df_metrics = df_metrics.sort_values(COL_NAME)
 
     for section, df_metrics_section in df_metrics.groupby(COL_SECTION):
 
@@ -448,7 +446,7 @@ def generate_figures(
                 tool: {
                     'color': palette[tool]
                 }
-                for tool in df_metrics_section[COL_NAME].sort_values()
+                for tool in df_metrics_section[COL_NAME]
             },
             loc='center left',
             bbox_to_anchor=(1, 0.5),
