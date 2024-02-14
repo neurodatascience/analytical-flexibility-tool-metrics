@@ -346,6 +346,7 @@ def generate_figures(
     dpath_figs.mkdir(exist_ok=True)
 
     if not split_by_section:
+        df_metrics_original = df_metrics.copy()
         df_metrics[COL_SECTION] = GROUPED_FIGURE_SECTION
 
     # process palette
@@ -451,6 +452,11 @@ def generate_figures(
                 palette=palette,
             )
 
+        labels_by_section = {}
+        if not split_by_section:
+            for section_, df_metrics_section_ in df_metrics_original.groupby(COL_SECTION):
+                labels_by_section[section_] = df_metrics_section_[COL_NAME].tolist()
+
         add_legend(
             fig,
             patch_args_by_label={
@@ -461,6 +467,7 @@ def generate_figures(
             },
             loc='center left',
             bbox_to_anchor=(1, 0.5),
+            labels_by_section=labels_by_section,
             frameon=False,
         )
 

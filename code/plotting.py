@@ -3,18 +3,35 @@ from typing import Mapping
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import matplotlib.text as mtext
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.legend_handler import HandlerBase
 
-def add_legend(fig_or_ax: plt.Figure | plt.Axes, patch_args_by_label: Mapping[str, Mapping], title=None, **kwargs):
+class TextHandler(HandlerBase):
+    def __init__(self, text_props=None, **kwargs):
+        self.text_props = text_props or {}
+        super().__init__(**kwargs)
+
+    def create_artists(self, legend, orig_handle, xdescent, ydescent, width, height, fontsize, trans):
+        return [mtext.Text(xdescent, ydescent, orig_handle.get_text(),  **self.text_props)]
+
+def add_legend(fig_or_ax: plt.Figure | plt.Axes, patch_args_by_label: Mapping[str, Mapping], title=None, labels_by_section=None, section_label_padding=80, **kwargs):
     if 'title_fontproperties' not in kwargs:
         kwargs['title_fontproperties'] = {'weight': 'bold'}
-    legend_handles = [
-        mpatches.Patch(label=label, **patch_args)
-        for label, patch_args in patch_args_by_label.items()
-    ]
-    legend = fig_or_ax.legend(handles=legend_handles, **kwargs)
+    legend_handles = []
+    if labels_by_section is None or len(labels_by_section) == 0:
+        labels_by_section = {'': list(patch_args_by_label.keys())}
+    for section, labels in labels_by_section.items():
+        legend_handles.append(mtext.Text(text=section, label=' ' * section_label_padding))
+        legend_handles.extend([
+            mpatches.Patch(label=label, **patch_args_by_label[label])
+            for label in labels
+        ])
+    if len(labels_by_section) == 1:
+        legend_handles = legend_handles[1:] # no section title if only one section
+    legend = fig_or_ax.legend(handles=legend_handles, handler_map={mtext.Text: TextHandler(text_props={'weight': 'bold'})}, **kwargs)
     legend.set_title(title)
     return legend
 
