@@ -39,7 +39,7 @@ def plot_timeseries(data: pd.DataFrame, x, y, log_scale=True, **kwargs):
     sns.despine(ax=ax)
     return ax
 
-def plot_bar(data: pd.DataFrame, x, y, log_scale=False, y_max_factor=1.2, **kwargs):
+def plot_bar(data: pd.DataFrame, x, y, log_scale=False, y_max_factor=1.2, label_fontsize=None, **kwargs):
     if 'legend' not in kwargs:
         kwargs['legend'] = False
     if 'saturation' not in kwargs:
@@ -47,7 +47,7 @@ def plot_bar(data: pd.DataFrame, x, y, log_scale=False, y_max_factor=1.2, **kwar
     ax = sns.barplot(data=data, x=x, y=y, **kwargs)
     y_max = max(data[y])
     for container in ax.containers:
-        ax.bar_label(container, fmt='{:,.0f}')
+        ax.bar_label(container, fmt='{:,.0f}', fontsize=label_fontsize)
     if log_scale:
         ax.set_yscale('log')
         ax.minorticks_off()

@@ -1,7 +1,7 @@
 tool_name,review_paper_section,doi,github,gitlab,docker1,docker2,github_container,pypi,conda
 BIDS Apps,2.1.1 Container-based solutions,10.1371/journal.pcbi.1005209,BIDS-Apps/example,,bids/example,,,,
 Neurodocker,2.1.1 Container-based solutions,10.5281/zenodo.1058997,ReproNim/neurodocker,,repronim/neurodocker,kaczmarj/neurodocker,,neurodocker,
-Neurodesk (Neurodesktop),2.1.1 Container-based solutions,10.1101/2022.12.23.521691,NeuroDesk/neurodesktop,,vnmd/neurodesktop,,NeuroDesk/neurodesktop/neurodesktop,,
+Neurodesk,2.1.1 Container-based solutions,10.1101/2022.12.23.521691,NeuroDesk/neurodesktop,,vnmd/neurodesktop,,NeuroDesk/neurodesktop/neurodesktop,,
 Boutiques,2.1.2 Container Descriptors,10.1093/gigascience/giy016,boutiques/boutiques,,,,,boutiques,
 NeuroDebian,2.1.3 Integrated computational environments,10.3389/fninf.2012.00022,neurodebian/neurodebian,,library/neurodebian,,,,
 NeuroFedora,2.1.3 Integrated computational environments,10.1186/s12868-020-00593-1,,,,,,,

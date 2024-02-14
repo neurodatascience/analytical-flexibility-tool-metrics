@@ -26,6 +26,9 @@ from utils import (
 from metrics import compute_metrics
 from plotting import add_legend, plot_timeseries, plot_bar
 
+# figure name if not splitting by section
+GROUPED_FIGURE_SECTION = 'all_tools'
+
 CITATION_CORRECTIONS = {
     # BIDS Apps
     '10.1371/journal.pcbi.1005209': {
@@ -105,7 +108,7 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
 
 def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> plt.Axes:
     if hatches is None:
-        hatches = [None, '/']
+        hatches = [None, '//']
     if len(hatches) != 2:
         raise ValueError(
             'hatches must be a list of length 2'
@@ -132,7 +135,12 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         ax=ax,
         log_scale=True,
         y_max_factor=1.6,
+        label_fontsize=7 if n_tools > 10 else None,
     )
+
+    if n_tools > 10:
+        ax.set_xticks(ax.get_xticks())
+        ax.set_xticklabels(ax.get_xticklabels(), fontdict={'fontsize': 9}, rotation=15, ha='right', rotation_mode='anchor')
 
     # set bar colour and hatch style
     for i_tool, tool in enumerate(ax.get_xticklabels()):
@@ -147,7 +155,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
             f'Number of {metric}': {
                 'facecolor': 'grey',
                 'edgecolor': 'white',
-                'hatch': hatch if hatch is None else hatch * 3,
+                'hatch': hatch if hatch is None else hatch * 2,
             }
             for metric, hatch in zip(['stars', 'forks'], hatches)
         },
@@ -297,9 +305,10 @@ def generate_figures(
         dpath_figs: Path,
         config_dict: Mapping[str, Tuple[str, Callable]] = None,
         ax_height=2,
-        fig_width=8,
+        fig_width=12,
         fpath_metrics_in: Path = None,
         fpath_metrics_out: Path = None,
+        split_by_section: bool = False,
         overwrite: bool = False,
         citation_corrections: Mapping[str, Mapping[str, str]] = None,
         palette = None,
@@ -336,9 +345,11 @@ def generate_figures(
     # create figs directory if needed
     dpath_figs.mkdir(exist_ok=True)
 
+    if not split_by_section:
+        df_metrics[COL_SECTION] = GROUPED_FIGURE_SECTION
+
     # process palette
     palette = process_palette(df_metrics, palette=palette)
-
 
     for section, df_metrics_section in df_metrics.groupby(COL_SECTION):
 
@@ -519,6 +530,12 @@ if __name__ == '__main__':
         required=False,
     )
     parser.add_argument(
+        '--by-section',
+        dest='split_by_section',
+        help='split figures by section',
+        action='store_true',
+    )
+    parser.add_argument(
         '--overwrite',
         help='overwrite existing figures (and metrics file if applicable)',
         action='store_true',
@@ -529,6 +546,7 @@ if __name__ == '__main__':
     dpath_figs = args.dpath_figs
     fpath_metrics_in = args.metrics_csv_in
     fpath_metrics_out = args.metrics_csv_out
+    split_by_section = args.split_by_section
     overwrite = args.overwrite
 
     if fpath_tools is None and fpath_metrics_in is None:
@@ -549,6 +567,7 @@ if __name__ == '__main__':
         dpath_figs=dpath_figs,
         fpath_metrics_in=fpath_metrics_in,
         fpath_metrics_out=fpath_metrics_out,
+        split_by_section=split_by_section,
         overwrite=overwrite,
         citation_corrections=CITATION_CORRECTIONS,
     )
