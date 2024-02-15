@@ -338,6 +338,7 @@ def generate_figures(
             idx_not_na = df_metrics[col].notna()
             df_metrics.loc[idx_not_na, col] = df_metrics.loc[idx_not_na, col].apply(json.loads)
     else:
+        print(f'Computing metrics for tools listed in {fpath_tools}')
         df_metrics = compute_metrics(
             fpath_tools=fpath_tools,
             config_dict=config_dict,
@@ -559,10 +560,6 @@ if __name__ == '__main__':
     split_by_section = args.split_by_section
     overwrite = args.overwrite
 
-    if fpath_tools is None and fpath_metrics_in is None:
-        raise RuntimeError(
-            'One of --tools and --load-metrics must be specified'
-        )
     if fpath_tools is not None and fpath_metrics_in is not None:
         warnings.warn(
             'Both --tools and --load-metrics specified, ignoring --tools'
@@ -572,7 +569,7 @@ if __name__ == '__main__':
             '--load-metrics and --save-metrics cannot both be specified'
         )
     
-    if fpath_tools is None:
+    if fpath_tools is None and fpath_metrics_in is None:
         fpath_tools = default_fpath_tools
 
     generate_figures(
