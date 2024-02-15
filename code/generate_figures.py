@@ -528,6 +528,7 @@ def generate_figures(
                 ax=ax_citations,
                 date_corrections=citation_corrections,
                 palette=palette,
+                with_labels=(not split_by_section),
             )
 
         if ax_repo is not None:
