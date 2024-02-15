@@ -93,6 +93,9 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
     )
     df_citations[col_n_citations_cumulative] = df_citations.groupby(COL_NAME)[col_n_citations].cumsum()
 
+    # remove duplicate date entries
+    df_citations = df_citations.groupby([COL_NAME, col_citation_date])[col_n_citations_cumulative].max().reset_index()
+
     ax = plot_timeseries(
         data=df_citations,
         x=col_citation_date,
@@ -102,6 +105,16 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
         palette=palette,
         y_max_factor=1.15,
     )
+
+    # add a vertical line for tools with multiple citations on their first date
+    for tool, df_citations_tool in df_citations.groupby(COL_NAME):
+        if df_citations_tool[col_n_citations_cumulative].min() != 1:
+            ax.vlines(
+                x=df_citations_tool[col_citation_date].min(),
+                ymin=1,
+                ymax=df_citations_tool[col_n_citations_cumulative].min(),
+                color=palette[tool],
+            )
 
     ax.set_title('Citations over time')
     ax.xaxis.set_major_locator(YearLocator())
