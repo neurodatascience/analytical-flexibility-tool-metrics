@@ -134,7 +134,7 @@ def plot_repo(df_metrics: pd.DataFrame, ax=None, hatches=None, palette=None) -> 
         hue=col_metric,
         ax=ax,
         log_scale=True,
-        y_max_factor=1.6,
+        y_max_factor=1.2,
         label_fontsize=7 if n_tools > 10 else None,
     )
 
@@ -179,6 +179,7 @@ def plot_containers_pulls(df_metrics: pd.DataFrame, ax=None, palette=None) -> pl
         hue=COL_NAME,
         palette=palette,
         log_scale=True,
+        y_max_factor=1.4,
     )
     ax.set_title('Container pulls')
     return ax
@@ -265,8 +266,10 @@ def plot_python_total(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Ax
         ax=ax,
         hue=COL_NAME,
         palette=palette,
+        log_scale=True,
+        y_max_factor=1.4,
     )
-    ax.set_title('Total Python package downloads')
+    ax.set_title('Total Python package downloads in the last 180 days')
     return ax
 
 def process_palette(df_metrics: pd.DataFrame, palette=None) -> Mapping[str, str]:
@@ -400,7 +403,7 @@ def generate_figures(
         if with_container_pulls:
             subplot_mosaic.append([label_containers])
         if with_python_downloads_total:
-            subplot_mosaic.append([label_python_timeseries])
+            subplot_mosaic.append([label_python_total])
         
         if len(subplot_mosaic) == 0:
             warnings.warn(f'No plot data for section {section}, skipping')
