@@ -35,7 +35,7 @@ def add_legend(fig_or_ax: plt.Figure | plt.Axes, patch_args_by_label: Mapping[st
     legend.set_title(title)
     return legend
 
-def plot_timeseries(data: pd.DataFrame, x, y, log_scale=True, **kwargs):
+def plot_timeseries(data: pd.DataFrame, x, y, log_scale=True, y_max_factor=1, **kwargs):
     if 'legend' not in kwargs:
         kwargs['legend'] = False
     ax = sns.lineplot(data=data, x=x, y=y, **kwargs)
@@ -47,6 +47,9 @@ def plot_timeseries(data: pd.DataFrame, x, y, log_scale=True, **kwargs):
             yticks = [10 ** i for i in range(greatest_power_of_ten + 1)]
             ax.set_yticks(yticks)
             ax.set_yticklabels(yticks)
+        y_max = ax.get_ylim()[1]
+        y_max = 10 ** (math.log10(y_max) * y_max_factor)
+        ax.set_ylim(top=y_max)
     
     ax.get_yaxis().set_major_formatter(FormatStrFormatter('%.0f'))
     ax.set_ylim(bottom=1)
