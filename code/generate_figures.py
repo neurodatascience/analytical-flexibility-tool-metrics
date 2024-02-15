@@ -495,6 +495,9 @@ def generate_figures(
         for char in ' .-':
             section_name_clean = section_name_clean.replace(char, '_')
         fpath_fig = dpath_figs / f'{section_name_clean}.png'
+        if fpath_fig.exists() and not overwrite:
+            warnings.warn(f'Figure {fpath_fig} already exists, skipping (use --overwrite to overwrite existing figures)')
+            continue
         fig.savefig(fpath_fig, dpi=300, bbox_inches='tight')
 
 if __name__ == '__main__':
