@@ -270,7 +270,13 @@ def plot_python_total(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Ax
     return ax
 
 def process_palette(df_metrics: pd.DataFrame, palette=None) -> Mapping[str, str]:
-    if palette is None:
+    if COL_COLOR in df_metrics.columns:
+        palette = {
+            tool: color
+            for tool, color
+            in df_metrics[[COL_NAME, COL_COLOR]].itertuples(index=False)
+        }
+    elif palette is None:
         palette = {}
         for _, df_colors in df_metrics.groupby(COL_SECTION):
             tools = df_colors[COL_NAME]
@@ -279,12 +285,6 @@ def process_palette(df_metrics: pd.DataFrame, palette=None) -> Mapping[str, str]
                 tool: color
                 for tool, color in zip(tools, colors)
             })
-    elif COL_COLOR in df_metrics.columns:
-        palette = {
-            tool: color
-            for tool, color
-            in df_metrics[[COL_NAME, COL_COLOR]].itertuples(index=False)
-        }
     else:
         # validate custom palette
         if not isinstance(palette, Mapping):
