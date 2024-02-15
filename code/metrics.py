@@ -322,7 +322,9 @@ def compute_metrics(
 
         idx_not_na = df_tools[col_to_standardize].notna()
         # get time difference in months
-        time_diff = (fetch_date.to_period('M') - pd.to_datetime(df_tools.loc[idx_not_na, col_date]).dt.to_period('M')).apply(attrgetter('n'))
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='Converting to PeriodArray/Index representation will drop timezone information.')
+            time_diff = (fetch_date.to_period('M') - pd.to_datetime(df_tools.loc[idx_not_na, col_date]).dt.to_period('M')).apply(attrgetter('n'))
         df_tools.loc[idx_not_na, col_standardized] = df_tools.loc[idx_not_na, col_to_standardize] / time_diff
 
     # combine code repo metrics
