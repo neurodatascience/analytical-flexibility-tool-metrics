@@ -508,7 +508,7 @@ if __name__ == '__main__':
         dest='fpath_tools',
         help=f'path to CSV file containing information about tools (default: {default_fpath_tools})',
         type=Path,
-        default=default_fpath_tools,
+        default=None, # real default is set later
         required=False,
     )
     parser.add_argument(
@@ -571,6 +571,9 @@ if __name__ == '__main__':
         raise RuntimeError(
             '--load-metrics and --save-metrics cannot both be specified'
         )
+    
+    if fpath_tools is None:
+        fpath_tools = default_fpath_tools
 
     generate_figures(
         fpath_tools=fpath_tools,
