@@ -47,6 +47,16 @@ CITATION_CORRECTIONS = {
     },
 }
 
+def get_python_timeseries_date_range(df_metrics: pd.DataFrame) -> pd.Series:
+    dates = []
+    for _, row in df_metrics.iterrows():
+        records = row[COL_PYPI_DOWNLOADS_TIMESERIES]
+        if not pd.isna(records):
+            for record in records['data']:
+                dates.append(pd.to_datetime(record['date']))
+    dates = pd.Series(dates).dt.strftime('%Y-%m-%d')
+    return dates.min(), dates.max()
+
 def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, palette=None, log_scale=True, with_labels=True) -> plt.Axes:
 
     if date_corrections is None:
@@ -358,7 +368,8 @@ def plot_python_timeseries(df_metrics: pd.DataFrame, ax=None, palette=None) -> p
         palette=palette,
     )
 
-    ax.set_title('Python package downloads in the last 180 days')
+    # ax.set_title('Python package downloads in the last 180 days')
+    ax.set_title(f'Python package downloads from {df_downloads[col_date].min()} to {df_downloads[col_date].max()}')
     ax.xaxis.set_major_locator(MonthLocator())
 
     return ax
@@ -374,7 +385,8 @@ def plot_python_total(df_metrics: pd.DataFrame, ax=None, palette=None) -> plt.Ax
         log_scale=True,
         y_max_factor=1.4,
     )
-    ax.set_title('Total Python package downloads in the last 180 days')
+    min_date, max_date = get_python_timeseries_date_range(df_metrics)
+    ax.set_title(f'Total Python package downloads from {min_date} to {max_date}')
     return ax
 
 def process_palette(df_metrics: pd.DataFrame, palette=None) -> Mapping[str, str]:
