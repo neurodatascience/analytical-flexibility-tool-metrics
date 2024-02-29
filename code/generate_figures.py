@@ -47,7 +47,7 @@ CITATION_CORRECTIONS = {
     },
 }
 
-def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, palette=None, with_labels=True) -> plt.Axes:
+def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, palette=None, log_scale=True, with_labels=True) -> plt.Axes:
 
     if date_corrections is None:
         date_corrections = {}
@@ -103,7 +103,8 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
         hue=COL_NAME,
         ax=ax,
         palette=palette,
-        y_max_factor=1.15,
+        # y_max_factor=1.15,
+        log_scale=log_scale,
     )
 
     # add a vertical line for tools with multiple citations on their first date
@@ -165,11 +166,13 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
         for i_label, (label, x, y) in enumerate(zip(labels, labels_x, labels_y)):
             # adding labels requires *a lot* of manual tweaking of the offset to look good
             # changing dimensions for the figure and/or changing y-axis limits will require re-tweaking
-            y_offset = 5
-            if y < 3:
+            y_offset = 10
+            # if y < 3:
+            #     y_offset += 6
+            if len(label) >= 10 and y < 100:
+                y_offset += 23
+            elif len(label) >= 9:
                 y_offset += 6
-            elif len(label) >= 10 and y < 100:
-                y_offset += 4
 
             annotation = ax.annotate(
                 label,
@@ -178,7 +181,7 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
                 textcoords='offset points',
                 ha='left',
                 va='bottom',
-                fontsize=10,
+                fontsize=12,
                 color=palette[label],
             )
 
@@ -187,7 +190,7 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
             for x1 in x1_all:
                 current_bounds = annotation.get_window_extent()
                 if current_bounds.x0 < x1:
-                    y_offset_to_avoid_overlap += 10
+                    y_offset_to_avoid_overlap += 15
                     i_label_ref -= 1
 
             if y_offset_to_avoid_overlap > 0:
@@ -199,7 +202,7 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
                     textcoords='offset points',
                     ha='left',
                     va='bottom',
-                    fontsize=10,
+                    fontsize=12,
                     color=palette[label],
                 )
 
@@ -501,6 +504,7 @@ def generate_figures(
         subplot_mosaic = []
         if with_citations:
             subplot_mosaic.append([label_citations])
+            subplot_mosaic.append([label_citations])
         if with_repo:
             subplot_mosaic.append([label_repo])
         if with_container_pulls:
@@ -529,6 +533,8 @@ def generate_figures(
                 date_corrections=citation_corrections,
                 palette=palette,
                 with_labels=(not split_by_section),
+                # with_labels=False,
+                # log_scale=False,
             )
 
         if ax_repo is not None:

@@ -12,10 +12,10 @@ Fastr,2.2 Workflow engines,#66aeba,10.3389/fict.2016.00015,,15795086,,,,fastr,
 Nextflow,2.2 Workflow engines,#99c9d1,10.1038/nbt.3820,nextflow-io/nextflow,,,,,nextflow,nextflow
 Pydra,2.2 Workflow engines,#b2d6dc,,nipype/pydra,,,,,pydra,
 NeuroCI,2.3 Continuous integration,#157F1F,10.1109/eScience55777.2022.00025,neurodatascience/NeuroCI,,,,,,
-DataLad,3 Data provenance,#00B9AE,10.21105/joss.03262,datalad/datalad,,,,,datalad,datalad
-BABS,3 Data provenance,#66d5ce,10.1162/imag_a_00074,PennLINC/babs,,,,,babs,
-Verrou,4 Numerical stability,#F786AA,,edf-hpc/verrou,,,,,,
-Verificarlo,4 Numerical stability,#fab6cc,10.1109/ARITH.2016.31,verificarlo/verificarlo,,verificarlo/verificarlo,,,,
+DataLad,3 Data provenance,#F786AA,10.21105/joss.03262,datalad/datalad,,,,,datalad,datalad
+BABS,3 Data provenance,#fab6cc,10.1162/imag_a_00074,PennLINC/babs,,,,,babs,
+Verrou,4 Numerical stability,#00B9AE,,edf-hpc/verrou,,,,,,
+Verificarlo,4 Numerical stability,#66d5ce,10.1109/ARITH.2016.31,verificarlo/verificarlo,,verificarlo/verificarlo,,,,
 VIP,5 Web computing platforms,#bf4e30,10.1109/TMI.2012.2220154,virtual-imaging-platform/VIP-portal,,,,,vip-client,
 CBRAIN,5 Web computing platforms,#cb7159,10.3389/fninf.2014.00054,aces/cbrain,,,,,,
 ChRIS,5 Web computing platforms,#d89482,10.1109/EMBC.2015.7318336,FNNDSC/ChRIS_ui,,,,,,
