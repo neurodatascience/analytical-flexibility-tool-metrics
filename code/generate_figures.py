@@ -430,6 +430,7 @@ def generate_figures(
         fpath_metrics_out: Path = None,
         split_by_section: bool = False,
         overwrite: bool = False,
+        save_as_svg: bool = False,
         citation_corrections: Mapping[str, Mapping[str, str]] = None,
         palette = None,
     ):
@@ -616,6 +617,8 @@ def generate_figures(
         for char in ' .-':
             section_name_clean = section_name_clean.replace(char, '_')
         fpath_fig = dpath_figs / f'{section_name_clean}.png'
+        if save_as_svg:
+            fpath_fig = fpath_fig.with_suffix('.svg')
         if fpath_fig.exists() and not overwrite:
             warnings.warn(f'Figure {fpath_fig} already exists, skipping (use --overwrite to overwrite existing figures)')
             continue
@@ -675,6 +678,11 @@ if __name__ == '__main__':
         help='overwrite existing figures (and metrics file if applicable)',
         action='store_true',
     )
+    parser.add_argument(
+        '--svg',
+        help='save figures as SVG instead of PNG',
+        action='store_true',
+    )
 
     args = parser.parse_args()
     fpath_tools = args.fpath_tools
@@ -683,6 +691,7 @@ if __name__ == '__main__':
     fpath_metrics_out = args.metrics_csv_out
     split_by_section = args.split_by_section
     overwrite = args.overwrite
+    save_as_svg = args.svg
 
     if fpath_tools is not None and fpath_metrics_in is not None:
         warnings.warn(
@@ -704,4 +713,5 @@ if __name__ == '__main__':
         split_by_section=split_by_section,
         overwrite=overwrite,
         citation_corrections=CITATION_CORRECTIONS,
+        save_as_svg=save_as_svg,
     )
