@@ -108,7 +108,7 @@ def metric(func):
 
 @metric
 def get_citations(doi):
-    url = f'https://opencitations.net/index/coci/api/v1/citations/{doi}'
+    url = f'https://opencitations.net/index/api/v1/citations/{doi}'
     return get_response_json(url)
 
 @metric
