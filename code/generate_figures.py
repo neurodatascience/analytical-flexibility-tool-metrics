@@ -131,93 +131,99 @@ def plot_citations(df_metrics: pd.DataFrame, ax=None, date_corrections=None, pal
     ax.xaxis.set_major_locator(YearLocator())
 
     if with_labels:
-        ax.set_xlim(left=df_citations[col_citation_date].min() - pd.Timedelta(days=40))
 
-        # get line values for each timepoint
-        # (labels will be placed above the maximum line value at that timepoint)
-        data_for_df_citations_interpolated = []
-        all_dates_num = date2num(df_citations[col_citation_date].drop_duplicates())
         for tool in df_citations[COL_NAME].unique():
             df_citations_tool = df_citations.loc[df_citations[COL_NAME] == tool]
-            if df_citations_tool[col_n_citations_cumulative].max() == 0:
-                continue
-            data_for_df_citations_interpolated.append(pd.DataFrame(
-                {
-                    COL_NAME: tool,
-                    col_citation_date: all_dates_num,
-                    col_n_citations_cumulative: np.interp(
-                        all_dates_num,
-                        date2num(df_citations_tool[col_citation_date]),
-                        df_citations_tool[col_n_citations_cumulative],
-                    ),
-                }
-            ))
-        df_citations_interpolated = pd.concat(data_for_df_citations_interpolated)
-        max_citations = df_citations_interpolated.groupby(col_citation_date)[col_n_citations_cumulative].max()
 
-        # add labels
-        labels = []
-        labels_x = []
-        labels_y = []
-        for tool in df_metrics[COL_NAME]:
-            if len(df_citations.loc[df_citations[COL_NAME] == tool].drop_duplicates(col_n_citations_cumulative)) < 2:
-                continue
-            date = date2num(df_citations.loc[df_citations[COL_NAME] == tool, col_citation_date].min())
-            labels.append(tool)
-            labels_x.append(date)
-            labels_y.append(max_citations[date])#5 + int(len(labels) * 1.5))
-        i_sort = np.argsort(labels_x)
-        labels = [labels[i] for i in i_sort]
-        labels_x = [labels_x[i] for i in i_sort]
-        labels_y = [labels_y[i] for i in i_sort]
+            ax.annotate(tool, ())
 
-        x1_all = []
-        y_offsets = []
-        for i_label, (label, x, y) in enumerate(zip(labels, labels_x, labels_y)):
-            # adding labels requires *a lot* of manual tweaking of the offset to look good
-            # changing dimensions for the figure and/or changing y-axis limits will require re-tweaking
-            y_offset = 10
-            # if y < 3:
-            #     y_offset += 6
-            if len(label) >= 10 and y < 100:
-                y_offset += 23
-            elif len(label) >= 9:
-                y_offset += 6
+        # ax.set_xlim(left=df_citations[col_citation_date].min() - pd.Timedelta(days=40))
 
-            annotation = ax.annotate(
-                label,
-                xy=(x, y),
-                xytext=(0, y_offset),
-                textcoords='offset points',
-                ha='left',
-                va='bottom',
-                fontsize=12,
-                color=palette[label],
-            )
+        # # get line values for each timepoint
+        # # (labels will be placed above the maximum line value at that timepoint)
+        # data_for_df_citations_interpolated = []
+        # all_dates_num = date2num(df_citations[col_citation_date].drop_duplicates())
+        # for tool in df_citations[COL_NAME].unique():
+        #     df_citations_tool = df_citations.loc[df_citations[COL_NAME] == tool]
+        #     if df_citations_tool[col_n_citations_cumulative].max() == 0:
+        #         continue
+        #     data_for_df_citations_interpolated.append(pd.DataFrame(
+        #         {
+        #             COL_NAME: tool,
+        #             col_citation_date: all_dates_num,
+        #             col_n_citations_cumulative: np.interp(
+        #                 all_dates_num,
+        #                 date2num(df_citations_tool[col_citation_date]),
+        #                 df_citations_tool[col_n_citations_cumulative],
+        #             ),
+        #         }
+        #     ))
+        # df_citations_interpolated = pd.concat(data_for_df_citations_interpolated)
+        # max_citations = df_citations_interpolated.groupby(col_citation_date)[col_n_citations_cumulative].max()
 
-            y_offset_to_avoid_overlap = 0
-            i_label_ref = i_label
-            for x1 in x1_all:
-                current_bounds = annotation.get_window_extent()
-                if current_bounds.x0 < x1:
-                    y_offset_to_avoid_overlap += 15
-                    i_label_ref -= 1
+        # # add labels
+        # labels = []
+        # labels_x = []
+        # labels_y = []
+        # for tool in df_metrics[COL_NAME]:
+        #     if len(df_citations.loc[df_citations[COL_NAME] == tool].drop_duplicates(col_n_citations_cumulative)) < 2:
+        #         continue
+        #     date = date2num(df_citations.loc[df_citations[COL_NAME] == tool, col_citation_date].min())
+        #     labels.append(tool)
+        #     labels_x.append(date)
+        #     labels_y.append(max_citations[date])#5 + int(len(labels) * 1.5))
+        # i_sort = np.argsort(labels_x)
+        # labels = [labels[i] for i in i_sort]
+        # labels_x = [labels_x[i] for i in i_sort]
+        # labels_y = [labels_y[i] for i in i_sort]
 
-            if y_offset_to_avoid_overlap > 0:
-                annotation.remove()
-                annotation = ax.annotate(
-                    label,
-                    xy=(x, labels_y[i_label_ref]),
-                    xytext=(0, y_offsets[i_label_ref] + y_offset_to_avoid_overlap),
-                    textcoords='offset points',
-                    ha='left',
-                    va='bottom',
-                    fontsize=12,
-                    color=palette[label],
-                )
+        # x1_all = []
+        # y_offsets = []
+        # for i_label, (label, x, y) in enumerate(zip(labels, labels_x, labels_y)):
+        #     # adding labels requires *a lot* of manual tweaking of the offset to look good
+        #     # changing dimensions for the figure and/or changing y-axis limits will require re-tweaking
+        #     y_offset = 10
+        #     # if y < 3:
+        #     #     y_offset += 6
+        #     if len(label) >= 10 and y < 100:
+        #         y_offset += 23
+        #     elif len(label) >= 9:
+        #         y_offset += 6
 
-            x1_all.append(annotation.get_window_extent().x1)
-            y_offsets.append(y_offset)
+        #     annotation = ax.annotate(
+        #         label,
+        #         xy=(x, y),
+        #         xytext=(0, y_offset),
+        #         textcoords='offset points',
+        #         ha='left',
+        #         va='bottom',
+        #         fontsize=12,
+        #         color=palette[label],
+        #     )
+
+        #     y_offset_to_avoid_overlap = 0
+        #     i_label_ref = i_label
+        #     for x1 in x1_all:
+        #         current_bounds = annotation.get_window_extent()
+        #         if current_bounds.x0 < x1:
+        #             y_offset_to_avoid_overlap += 15
+        #             i_label_ref -= 1
+
+        #     if y_offset_to_avoid_overlap > 0:
+        #         annotation.remove()
+        #         annotation = ax.annotate(
+        #             label,
+        #             xy=(x, labels_y[i_label_ref]),
+        #             xytext=(0, y_offsets[i_label_ref] + y_offset_to_avoid_overlap),
+        #             textcoords='offset points',
+        #             ha='left',
+        #             va='bottom',
+        #             fontsize=12,
+        #             color=palette[label],
+        #         )
+
+        #     x1_all.append(annotation.get_window_extent().x1)
+        #     y_offsets.append(y_offset)
 
     return ax
 
